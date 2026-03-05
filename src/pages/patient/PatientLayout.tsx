@@ -24,10 +24,10 @@ const PatientLayout = () => {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="w-64 min-h-screen flex-col hidden lg:flex" style={{ background: 'hsl(220 20% 13%)' }}>
+      <aside className="w-64 min-h-screen flex-col hidden lg:flex bg-card border-r border-border">
         <div className="p-5 flex items-center gap-3">
           <img src={speedmedLogo} alt="SpeedMed" className="h-8 w-auto rounded" />
-          <span className="text-lg font-bold" style={{ fontFamily: 'var(--font-heading)', color: 'hsl(0 0% 100%)' }}>SpeedMed</span>
+          <span className="text-lg font-bold font-heading text-foreground">SpeedMed</span>
         </div>
 
         <nav className="flex-1 py-2">
@@ -37,13 +37,8 @@ const PatientLayout = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-all ${isActive ? 'font-semibold' : 'opacity-70 hover:opacity-100'
+                className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-all ${isActive ? 'font-semibold text-primary bg-primary/10 border-l-4 border-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border-l-4 border-transparent'
                   }`}
-                style={{
-                  color: isActive ? 'hsl(199 89% 60%)' : 'hsl(210 20% 80%)',
-                  background: isActive ? 'hsl(199 89% 48% / 0.1)' : 'transparent',
-                  borderLeft: isActive ? '3px solid hsl(199 89% 60%)' : '3px solid transparent',
-                }}
               >
                 <item.icon className="w-5 h-5" />
                 <span>{item.label}</span>
@@ -57,26 +52,17 @@ const PatientLayout = () => {
           })}
         </nav>
 
-        <button
-          onClick={toggleTheme}
-          className="flex items-center gap-3 px-5 py-3 text-sm opacity-70 hover:opacity-100"
-          style={{ color: 'hsl(210 20% 80%)' }}
-        >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          <span>Modo {theme === 'dark' ? 'Claro' : 'Escuro'}</span>
-        </button>
-
-        <div className="p-4 border-t" style={{ borderColor: 'hsl(220 20% 20%)' }}>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'hsl(199 89% 48%)' }}>
-              <User className="w-4 h-4" style={{ color: 'hsl(0 0% 100%)' }} />
+        <div className="p-4 border-t border-border mt-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <User className="w-5 h-5 text-primary-foreground" />
             </div>
-            <div>
-              <p className="text-sm font-medium" style={{ color: 'hsl(0 0% 100%)' }}>{mockPatientUser.name}</p>
-              <p className="text-xs" style={{ color: 'hsl(210 20% 60%)' }}>Paciente</p>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium text-foreground truncate">{mockPatientUser.name}</p>
+              <p className="text-xs text-muted-foreground truncate">Paciente</p>
             </div>
           </div>
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm opacity-60 hover:opacity-100" style={{ color: 'hsl(210 20% 80%)' }}>
+          <button onClick={() => navigate('/')} className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary py-2 rounded-lg transition-colors">
             <LogOut className="w-4 h-4" /><span>Sair</span>
           </button>
         </div>

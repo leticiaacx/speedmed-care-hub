@@ -12,7 +12,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem('speedmed-theme');
-    return (stored as Theme) || 'light';
+    // Força o light se não tiver nada explícito ou se a pessoa pediu pra ser claro padrão
+    return (stored as Theme) === 'dark' ? 'dark' : 'light';
   });
 
   useEffect(() => {
