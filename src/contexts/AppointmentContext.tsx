@@ -15,7 +15,10 @@ interface AppointmentContextType {
   addAppointment: (appt: Omit<Appointment, 'id'>) => void;
   updateAppointmentStatus: (id: string, status: Appointment['status']) => void;
   markNotificationRead: (id: string) => void;
+  clearPatientNotifications: () => void;
   unreadCount: number;
+  pendingAppointmentsCount: number;
+  patientUnreadCount: number;
 }
 
 const AppointmentContext = createContext<AppointmentContextType | undefined>(undefined);
@@ -60,10 +63,16 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const clearPatientNotifications = useCallback(() => {
+    setNotifications(prev => prev.map(n => n.type === 'confirmation' ? { ...n, read: true } : n));
+  }, []);
+
+  const unreadCount = notifications.filter(n => !n.read && n.type !== 'confirmation').length;
+  const patientUnreadCount = notifications.filter(n => !n.read && n.type === 'confirmation').length;
+  const pendingAppointmentsCount = appointments.filter(a => a.status === 'pendente').length;
 
   return (
-    <AppointmentContext.Provider value={{ appointments, notifications, addAppointment, updateAppointmentStatus, markNotificationRead, unreadCount }}>
+    <AppointmentContext.Provider value={{ appointments, notifications, addAppointment, updateAppointmentStatus, markNotificationRead, clearPatientNotifications, unreadCount, pendingAppointmentsCount, patientUnreadCount }}>
       {children}
     </AppointmentContext.Provider>
   );

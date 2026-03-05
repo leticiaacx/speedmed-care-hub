@@ -3,6 +3,7 @@ import { Home, Calendar, Stethoscope, FileText, Clock, CalendarDays, Settings, L
 import speedmedLogo from '@/assets/speedmed-logo.png';
 import { mockPatientUser } from '@/data/mockData';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAppointments } from '@/contexts/AppointmentContext';
 
 const menuItems = [
   { icon: Home, label: 'Início', path: '/patient' },
@@ -18,6 +19,7 @@ const PatientLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { patientUnreadCount } = useAppointments();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -45,6 +47,11 @@ const PatientLayout = () => {
               >
                 <item.icon className="w-5 h-5" />
                 <span>{item.label}</span>
+                {item.path === '/patient/appointments' && patientUnreadCount > 0 && (
+                  <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {patientUnreadCount}
+                  </span>
+                )}
               </button>
             );
           })}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Clock, ChevronLeft, ChevronRight, Check, X, MapPin } from 'lucide-react';
 import { mockDoctor } from '@/data/mockData';
 import { useAppointments } from '@/contexts/AppointmentContext';
@@ -19,7 +19,7 @@ const availableLocations = [
 ];
 
 const PatientAppointments = () => {
-  const { appointments, addAppointment, updateAppointmentStatus } = useAppointments();
+  const { appointments, addAppointment, updateAppointmentStatus, clearPatientNotifications } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showBooking, setShowBooking] = useState(false);
@@ -33,6 +33,10 @@ const PatientAppointments = () => {
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const startDayOfWeek = getDay(monthStart);
+
+  useEffect(() => {
+    clearPatientNotifications();
+  }, [clearPatientNotifications]);
 
   const myAppointments = appointments.filter(a => a.patientId === '1' || a.patientName === 'José Silva');
 
@@ -99,8 +103,8 @@ const PatientAppointments = () => {
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(isSelected ? null : day)}
                   className={`relative p-1.5 rounded-lg text-sm transition-all aspect-square flex items-center justify-center ${isSelected ? 'bg-primary text-primary-foreground font-bold' :
-                      isToday ? 'bg-accent text-accent-foreground font-semibold' :
-                        'hover:bg-secondary text-foreground'
+                    isToday ? 'bg-accent text-accent-foreground font-semibold' :
+                      'hover:bg-secondary text-foreground'
                     }`}
                 >
                   {format(day, 'd')}
@@ -246,8 +250,8 @@ const PatientAppointments = () => {
                           disabled={isBooked}
                           onClick={() => setSelectedTime(slot)}
                           className={`py-2 rounded-lg text-sm font-semibold transition-all border ${selectedTime === slot ? 'bg-primary text-primary-foreground border-primary shadow-sm' :
-                              isBooked ? 'bg-muted text-muted-foreground cursor-not-allowed line-through border-border border-dashed' :
-                                'bg-background text-foreground hover:bg-secondary border-border'
+                            isBooked ? 'bg-muted text-muted-foreground cursor-not-allowed line-through border-border border-dashed' :
+                              'bg-background text-foreground hover:bg-secondary border-border'
                             }`}
                         >
                           {slot}

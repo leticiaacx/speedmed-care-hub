@@ -17,7 +17,7 @@ const DoctorSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const { unreadCount } = useAppointments();
+  const { unreadCount, pendingAppointmentsCount } = useAppointments();
 
   return (
     <aside className="w-64 min-h-screen flex flex-col" style={{ background: 'hsl(220 20% 13%)' }}>
@@ -45,9 +45,9 @@ const DoctorSidebar = () => {
             >
               <item.icon className="w-5 h-5" />
               <span>{item.label}</span>
-              {item.path === '/doctor/appointments' && unreadCount > 0 && (
+              {item.path === '/doctor/appointments' && pendingAppointmentsCount > 0 && (
                 <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadCount}
+                  {pendingAppointmentsCount}
                 </span>
               )}
             </button>
