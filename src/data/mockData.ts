@@ -14,6 +14,15 @@ export interface Patient {
     location: string;
     reason: string;
   };
+  heredity: string[];
+  consultationHistory: {
+    date: string;
+    time: string;
+    type: string;
+    specialty: string;
+    doctorName: string;
+    diagnosis: string;
+  }[];
   nextAppointment?: {
     date: string;
     time: string;
@@ -64,6 +73,11 @@ export const mockPatients: Patient[] = [
       location: 'Clínica SpeedMed - Unidade Centro',
       reason: 'Dores de cabeça frequentes',
     },
+    heredity: ['Hipertensão (Mãe)', 'Diabetes (Pai)'],
+    consultationHistory: [
+      { date: '2026-02-20', time: '14:00', type: 'Consulta', specialty: 'Neurologia', doctorName: 'Dr. Roberto', diagnosis: 'Enxaqueca tensional' },
+      { date: '2025-10-15', time: '09:30', type: 'Retorno', specialty: 'Clínico Geral', doctorName: 'Dra. Ana', diagnosis: 'Rotina normal' },
+    ],
     nextAppointment: { date: '2026-03-10', time: '09:00', type: 'Retorno' },
   },
   {
@@ -82,6 +96,10 @@ export const mockPatients: Patient[] = [
       location: 'Clínica SpeedMed - Unidade Sul',
       reason: 'Dor abdominal',
     },
+    heredity: ['Doença Celíaca (Irmão)'],
+    consultationHistory: [
+      { date: '2026-02-15', time: '10:30', type: 'Consulta', specialty: 'Gastroenterologia', doctorName: 'Dr. Silva', diagnosis: 'Gastrite aguda' },
+    ],
     nextAppointment: { date: '2026-03-12', time: '11:00', type: 'Consulta' },
   },
   {
@@ -100,6 +118,11 @@ export const mockPatients: Patient[] = [
       location: 'Clínica SpeedMed - Unidade Centro',
       reason: 'Controle de hipertensão',
     },
+    heredity: ['Hipertensão (Pai e Mãe)'],
+    consultationHistory: [
+      { date: '2026-02-28', time: '16:00', type: 'Retorno', specialty: 'Cardiologia', doctorName: 'Dra. Lima', diagnosis: 'Hipertensão controlada' },
+      { date: '2026-01-10', time: '14:00', type: 'Consulta', specialty: 'Cardiologia', doctorName: 'Dra. Lima', diagnosis: 'Ajuste de dosagem' },
+    ],
     nextAppointment: { date: '2026-03-15', time: '15:00', type: 'Retorno' },
   },
   {
@@ -118,6 +141,10 @@ export const mockPatients: Patient[] = [
       location: 'Clínica SpeedMed - Unidade Norte',
       reason: 'Acompanhamento diabetes',
     },
+    heredity: ['Diabetes Tipo 2 (Mãe)'],
+    consultationHistory: [
+      { date: '2026-03-01', time: '08:00', type: 'Consulta', specialty: 'Endocrinologia', doctorName: 'Dr. Costa', diagnosis: 'Diabetes Tipo 2' },
+    ],
   },
   {
     id: '5',
@@ -135,6 +162,10 @@ export const mockPatients: Patient[] = [
       location: 'Clínica SpeedMed - Unidade Centro',
       reason: 'Check-up anual',
     },
+    heredity: [],
+    consultationHistory: [
+      { date: '2026-02-10', time: '13:00', type: 'Consulta', specialty: 'Clínico Geral', doctorName: 'Dra. Souza', diagnosis: 'Exames normais' },
+    ],
     nextAppointment: { date: '2026-03-20', time: '14:00', type: 'Exame' },
   },
 ];

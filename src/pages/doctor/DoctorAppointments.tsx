@@ -14,7 +14,9 @@ const DoctorAppointments = () => {
   const { appointments, updateAppointmentStatus, addAppointment } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
+  const [denyingApptId, setDenyingApptId] = useState<string | null>(null);
+  const [denyMessage, setDenyMessage] = useState('');
   const [showNewAppt, setShowNewAppt] = useState(false);
   const [newAppt, setNewAppt] = useState({ patientId: '', date: '', time: '', type: 'Consulta', reason: '' });
 
@@ -56,6 +58,19 @@ const DoctorAppointments = () => {
     setNewAppt({ patientId: '', date: '', time: '', type: 'Consulta', reason: '' });
   };
 
+  const handleDenySubmit = () => {
+    if (denyingApptId) {
+      updateAppointmentStatus(denyingApptId, 'cancelado');
+      // Here we would typically send the push notification or email with denyMessage
+      console.log(`Mensagem de cancelamento enviada ao paciente: ${denyMessage}`);
+      setDenyingApptId(null);
+      setDenyMessage('');
+      setSelectedApptId(null);
+    }
+  };
+
+  const selectedAppt = selectedApptId ? appointments.find(a => a.id === selectedApptId) : null;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -88,11 +103,10 @@ const DoctorAppointments = () => {
                 <button
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(isSelected ? null : day)}
-                  className={`relative p-1.5 rounded-lg text-sm transition-all aspect-square flex items-center justify-center ${
-                    isSelected ? 'bg-primary text-primary-foreground font-bold' :
-                    isToday ? 'bg-accent text-accent-foreground font-semibold' :
-                    'hover:bg-secondary text-foreground'
-                  }`}
+                  className={`relative p-1.5 rounded-lg text-sm transition-all aspect-square flex items-center justify-center ${isSelected ? 'bg-primary text-primary-foreground font-bold' :
+                      isToday ? 'bg-accent text-accent-foreground font-semibold' :
+                        'hover:bg-secondary text-foreground'
+                    }`}
                 >
                   {format(day, 'd')}
                   {dayAppts.length > 0 && (
@@ -141,19 +155,12 @@ const DoctorAppointments = () => {
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[appt.status]}`}>
                       {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
                     </span>
-                    {appt.status === 'pendente' && (
-                      <>
-                        <button onClick={() => updateAppointmentStatus(appt.id, 'confirmado')} className="p-1.5 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30" title="Confirmar">
-                          <Check className="w-4 h-4 text-green-600" />
-                        </button>
-                        <button onClick={() => updateAppointmentStatus(appt.id, 'cancelado')} className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30" title="Cancelar">
-                          <X className="w-4 h-4 text-red-600" />
-                        </button>
-                      </>
-                    )}
-                    <button onClick={() => setSelectedPatientId(appt.patientId)} className="p-1.5 rounded-lg hover:bg-secondary" title="Ver ficha">
+                    <button onClick={() => setSelectedApptId(appt.id)} className="p-1.5 rounded-lg hover:bg-secondary border border-border" title="Ver Detalhes">
                       <Eye className="w-4 h-4 text-primary" />
                     </button>
+                    {appt.status === 'pendente' && (
+                      <span className="text-xs text-muted-foreground ml-2">Revisão necessária</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -167,6 +174,109 @@ const DoctorAppointments = () => {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Ficha do Paciente</DialogTitle></DialogHeader>
           {selectedPatient && <PatientRecord patient={selectedPatient} />}
+        </DialogContent>
+      </Dialog>
+
+      {/* Appointment Details / Review Modal */}
+      <Dialog open={!!selectedApptId} onOpenChange={(open) => !open && setSelectedApptId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detalhes do Agendamento</DialogTitle>
+          </DialogHeader>
+          {selectedAppt && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-secondary space-y-3">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Paciente</p>
+                    <p className="font-semibold text-foreground">{selectedAppt.patientName}</p>
+                  </div>
+                  <button onClick={() => setSelectedPatientId(selectedAppt.patientId)} className="text-xs text-primary font-medium hover:underline">
+                    Ver Ficha Completa
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-border">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Data</p>
+                    <div className="flex items-center gap-1.5 font-medium text-foreground text-sm">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {format(parseISO(selectedAppt.date), 'dd/MM/yyyy')}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Horário</p>
+                    <div className="flex items-center gap-1.5 font-medium text-foreground text-sm">
+                      <Clock className="w-3.5 h-3.5" />
+                      {selectedAppt.time}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tipo</p>
+                  <p className="font-medium text-foreground">{selectedAppt.type}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Motivo</p>
+                  <p className="font-medium text-foreground p-2 rounded bg-background border border-border mt-1">
+                    {selectedAppt.reason}
+                  </p>
+                </div>
+              </div>
+
+              {selectedAppt.status === 'pendente' && (
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => {
+                      updateAppointmentStatus(selectedAppt.id, 'confirmado');
+                      setSelectedApptId(null);
+                    }}
+                  >
+                    <Check className="w-4 h-4" /> Aceitar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="flex-1 gap-2"
+                    onClick={() => setDenyingApptId(selectedAppt.id)}
+                  >
+                    <X className="w-4 h-4" /> Negar
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Deny Reason Modal */}
+      <Dialog open={!!denyingApptId} onOpenChange={(open) => {
+        if (!open) {
+          setDenyingApptId(null);
+          setDenyMessage('');
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Motivo da Recusa</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Por favor, informe ao paciente o motivo de não poder aceitar o agendamento neste horário.
+            </p>
+            <textarea
+              className="w-full min-h-[100px] p-3 rounded-lg border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Ex: Tive um imprevisto médico neste horário e não poderei atender. Por favor, remarque."
+              value={denyMessage}
+              onChange={(e) => setDenyMessage(e.target.value)}
+            />
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => {
+                setDenyingApptId(null);
+                setDenyMessage('');
+              }}>Cancelar</Button>
+              <Button variant="destructive" onClick={handleDenySubmit} disabled={!denyMessage.trim()}>
+                Enviar e Recusar
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
