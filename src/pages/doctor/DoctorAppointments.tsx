@@ -14,6 +14,7 @@ const DoctorAppointments = () => {
   const { appointments, updateAppointmentStatus, addAppointment } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
   const [denyingApptId, setDenyingApptId] = useState<string | null>(null);
   const [denyMessage, setDenyMessage] = useState('');
@@ -104,8 +105,8 @@ const DoctorAppointments = () => {
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(isSelected ? null : day)}
                   className={`relative p-1.5 rounded-lg text-sm transition-all aspect-square flex items-center justify-center ${isSelected ? 'bg-primary text-primary-foreground font-bold' :
-                      isToday ? 'bg-accent text-accent-foreground font-semibold' :
-                        'hover:bg-secondary text-foreground'
+                    isToday ? 'bg-accent text-accent-foreground font-semibold' :
+                      'hover:bg-secondary text-foreground'
                     }`}
                 >
                   {format(day, 'd')}
