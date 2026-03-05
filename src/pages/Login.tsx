@@ -20,7 +20,7 @@ const Login = () => {
     <div className="min-h-screen flex flex-col bg-background">
       {/* Top bar */}
       <div className="h-14 flex items-center px-6" style={{ background: 'hsl(220 20% 15%)' }}>
-        <img src={speedmedLogo} alt="SpeedMed" className="w-8 h-8 rounded" />
+        <img src={speedmedLogo} alt="SpeedMed" className="h-8 w-auto rounded" />
       </div>
 
       <div className="flex flex-1">
@@ -34,7 +34,7 @@ const Login = () => {
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
           <div className="w-full max-w-md space-y-8">
             <div className="text-center">
-              <img src={speedmedLogo} alt="SpeedMed" className="w-24 h-24 mx-auto mb-4 rounded-2xl" />
+              <img src={speedmedLogo} alt="SpeedMed" className="h-20 w-auto object-contain mx-auto mb-4 rounded-xl" />
               <h1 className="text-4xl font-bold text-primary" style={{ fontFamily: 'var(--font-heading)' }}>
                 Speed<span className="text-destructive">MED</span>
               </h1>
@@ -44,21 +44,19 @@ const Login = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setUserType('doctor')}
-                className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                  userType === 'doctor'
+                className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${userType === 'doctor'
                     ? 'bg-primary text-primary-foreground shadow-lg'
                     : 'bg-secondary text-secondary-foreground hover:bg-muted'
-                }`}
+                  }`}
               >
                 Médico
               </button>
               <button
                 onClick={() => setUserType('patient')}
-                className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                  userType === 'patient'
+                className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${userType === 'patient'
                     ? 'bg-primary text-primary-foreground shadow-lg'
                     : 'bg-secondary text-secondary-foreground hover:bg-muted'
-                }`}
+                  }`}
               >
                 Paciente
               </button>

@@ -172,9 +172,13 @@ const DoctorAppointments = () => {
 
       {/* Patient Record Modal */}
       <Dialog open={!!selectedPatient} onOpenChange={() => setSelectedPatientId(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Ficha do Paciente</DialogTitle></DialogHeader>
-          {selectedPatient && <PatientRecord patient={selectedPatient} />}
+        <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Ficha do Paciente</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-6 pt-2">
+            {selectedPatient && <PatientRecord patient={selectedPatient} />}
+          </div>
         </DialogContent>
       </Dialog>
 

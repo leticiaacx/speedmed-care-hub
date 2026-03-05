@@ -24,7 +24,7 @@ const PatientLayout = () => {
       {/* Sidebar */}
       <aside className="w-64 min-h-screen flex-col hidden lg:flex" style={{ background: 'hsl(220 20% 13%)' }}>
         <div className="p-5 flex items-center gap-3">
-          <img src={speedmedLogo} alt="SpeedMed" className="w-9 h-9 rounded-lg" />
+          <img src={speedmedLogo} alt="SpeedMed" className="h-8 w-auto rounded" />
           <span className="text-lg font-bold" style={{ fontFamily: 'var(--font-heading)', color: 'hsl(0 0% 100%)' }}>SpeedMed</span>
         </div>
 
@@ -35,9 +35,8 @@ const PatientLayout = () => {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-all ${
-                  isActive ? 'font-semibold' : 'opacity-70 hover:opacity-100'
-                }`}
+                className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-all ${isActive ? 'font-semibold' : 'opacity-70 hover:opacity-100'
+                  }`}
                 style={{
                   color: isActive ? 'hsl(199 89% 60%)' : 'hsl(210 20% 80%)',
                   background: isActive ? 'hsl(199 89% 48% / 0.1)' : 'transparent',

@@ -22,7 +22,7 @@ const DoctorSidebar = () => {
   return (
     <aside className="w-64 min-h-screen flex flex-col" style={{ background: 'hsl(220 20% 13%)' }}>
       <div className="p-5 flex items-center gap-3">
-        <img src={speedmedLogo} alt="SpeedMed" className="w-9 h-9 rounded-lg" />
+        <img src={speedmedLogo} alt="SpeedMed" className="h-8 w-auto rounded" />
         <span className="text-lg font-bold" style={{ fontFamily: 'var(--font-heading)', color: 'hsl(0 0% 100%)' }}>
           Speed-med
         </span>
@@ -35,9 +35,8 @@ const DoctorSidebar = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-all relative ${
-                isActive ? 'font-semibold' : 'opacity-70 hover:opacity-100'
-              }`}
+              className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-all relative ${isActive ? 'font-semibold' : 'opacity-70 hover:opacity-100'
+                }`}
               style={{
                 color: isActive ? 'hsl(199 89% 60%)' : 'hsl(210 20% 80%)',
                 background: isActive ? 'hsl(199 89% 48% / 0.1)' : 'transparent',
@@ -70,11 +69,11 @@ const DoctorSidebar = () => {
       <div className="p-4 border-t" style={{ borderColor: 'hsl(220 20% 20%)' }}>
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'hsl(199 89% 48%)' }}>
-            <span className="text-xs font-bold" style={{ color: 'hsl(0 0% 100%)' }}>DR</span>
+            <span className="text-xs font-bold" style={{ color: 'hsl(0 0% 100%)' }}>{mockDoctor.name.split(' ').map(n => n[0]).join('').substring(0, 2)}</span>
           </div>
           <div>
-            <p className="text-sm font-medium" style={{ color: 'hsl(0 0% 100%)' }}>Dr. Felipe</p>
-            <p className="text-xs" style={{ color: 'hsl(210 20% 60%)' }}>Admin</p>
+            <p className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]" style={{ color: 'hsl(0 0% 100%)' }} title={mockDoctor.name}>{mockDoctor.name}</p>
+            <p className="text-xs" style={{ color: 'hsl(210 20% 60%)' }}>{mockDoctor.specialty}</p>
           </div>
         </div>
         <button
