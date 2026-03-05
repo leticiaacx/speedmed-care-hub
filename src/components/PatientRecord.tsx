@@ -5,6 +5,8 @@ import { format, parseISO } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useAppointments } from '@/contexts/AppointmentContext';
+import { useNavigate } from 'react-router-dom';
 
 interface PatientRecordProps {
   patient: Patient;
@@ -21,6 +23,31 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
   const [newMedication, setNewMedication] = useState('');
   const [newHeredity, setNewHeredity] = useState('');
   const [newNote, setNewNote] = useState('');
+
+  const { saveDoctorReport } = useAppointments();
+  const navigate = useNavigate();
+
+  const handleGenerateReport = () => {
+    let reportContent = `RELATÓRIO MÉDICO - ${patient.name}\n`;
+    reportContent += `Data: ${format(new Date(), 'dd/MM/yyyy')}\n\n`;
+    reportContent += `TRATAMENTO:\n`;
+    reportContent += `[Descreva o tratamento aqui]\n\n`;
+    reportContent += `DOENÇAS DO PACIENTE:\n`;
+    reportContent += `[Descreva as doenças preexistentes ou atuais]\n\n`;
+    reportContent += `DETALHES IMPORTANTES:\n`;
+    reportContent += `[Adicione observações adicionais]`;
+
+    saveDoctorReport({
+      patientId: patient.id,
+      patientName: patient.name,
+      date: format(new Date(), 'dd/MM/yyyy'),
+      content: reportContent,
+      status: 'draft'
+    });
+
+    toast.success('Relatório gerado como rascunho!');
+    navigate('/doctor/reports');
+  };
 
   const handleSave = () => {
     // In a real app, this would be an API call
@@ -76,6 +103,11 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
               Concluir Consulta
             </Button>
           )}
+
+          <Button variant="secondary" onClick={handleGenerateReport} className="gap-2 bg-primary/10 text-primary hover:bg-primary/20">
+            <FileText className="w-4 h-4" />
+            Gerar Relatório
+          </Button>
 
           {isEditing ? (
             <>

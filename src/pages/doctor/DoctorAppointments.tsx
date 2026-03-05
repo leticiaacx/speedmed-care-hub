@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye, Plus, Check, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye, Plus, Check, X, AlertTriangle } from 'lucide-react';
 import { mockPatients } from '@/data/mockData';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, isFuture } from 'date-fns';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import PatientRecord from '@/components/PatientRecord';
 
 const DoctorAppointments = () => {
-  const { appointments, updateAppointmentStatus, addAppointment } = useAppointments();
+  const { appointments, updateAppointmentStatus, addAppointment, pendingAppointmentsCount } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
@@ -80,6 +80,18 @@ const DoctorAppointments = () => {
           <Plus className="w-4 h-4" /> Novo Agendamento
         </Button>
       </div>
+
+      {pendingAppointmentsCount > 0 && (
+        <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-xl flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-destructive">Atenção: Agendamentos Pendentes</h3>
+            <p className="text-sm text-destructive/90 mt-1">
+              Você possui <strong>{pendingAppointmentsCount}</strong> solicitação(ões) de agendamento aguardando aprovação. Por favor, revise a lista abaixo para aceitar ou recusar.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}

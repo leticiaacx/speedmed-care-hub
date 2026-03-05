@@ -1,35 +1,21 @@
 import { useState } from 'react';
-import { Download, FileText, User, Calendar, Edit, Save } from 'lucide-react';
-import { mockPatients, mockDoctor, Patient } from '@/data/mockData';
-import { useAppointments } from '@/contexts/AppointmentContext';
-import { format, parseISO } from 'date-fns';
+import { Download, FileText, User, Calendar, Edit, Save, Send } from 'lucide-react';
+import { mockDoctor, Patient } from '@/data/mockData';
+import { useAppointments, DoctorReport } from '@/contexts/AppointmentContext';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import jsPDF from 'jspdf';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const DoctorReports = () => {
-  const { appointments } = useAppointments();
+  const { appointments, doctorReports, saveDoctorReport, sendFileToPatient } = useAppointments();
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportType, setReportType] = useState<'monthly' | 'patient'>('monthly');
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [selectedReport, setSelectedReport] = useState<DoctorReport | null>(null);
   const [reportText, setReportText] = useState('');
-
-  const generateInitialPatientReportText = (patient: Patient) => {
-    let text = `RELATÓRIO DO PACIENTE\n\n`;
-    text += `Nome: ${patient.name}\n`;
-    text += `Idade: ${patient.age} anos | CPF: ${patient.cpf}\n`;
-    text += `Telefone: ${patient.phone} | E-mail: ${patient.email}\n`;
-    text += `Tipo Sanguíneo: ${patient.bloodType}\n\n`;
-    text += `ALERGIAS:\n${patient.allergies.length > 0 ? patient.allergies.join(', ') : 'Nenhuma'}\n\n`;
-    text += `MEDICAMENTOS EM USO:\n${patient.medications.length > 0 ? patient.medications.join(', ') : 'Nenhum'}\n\n`;
-    text += `ÚLTIMA CONSULTA:\nData: ${format(parseISO(patient.lastConsultation.date), 'dd/MM/yyyy')} às ${patient.lastConsultation.time}\n`;
-    text += `Motivo: ${patient.lastConsultation.reason}\n\n`;
-    text += `CONCLUSÃO MÉDICA:\nPaciente encontra-se em quadro estável. (Edite este campo com suas observações)`;
-    return text;
-  };
 
   const generateInitialMonthlyReportText = () => {
     const totalAppointments = appointments.length;
@@ -47,16 +33,13 @@ const DoctorReports = () => {
     return text;
   };
 
-  const openReportModal = (type: 'monthly' | 'patient', patientId?: string) => {
+  const openReportModal = (type: 'monthly' | 'patient', report?: DoctorReport) => {
     setReportType(type);
-    if (type === 'patient' && patientId) {
-      const p = mockPatients.find(p => p.id === patientId);
-      if (p) {
-        setSelectedPatient(p);
-        setReportText(generateInitialPatientReportText(p));
-      }
+    if (type === 'patient' && report) {
+      setSelectedReport(report);
+      setReportText(report.content);
     } else {
-      setSelectedPatient(null);
+      setSelectedReport(null);
       setReportText(generateInitialMonthlyReportText());
     }
     setReportModalOpen(true);
@@ -106,8 +89,8 @@ const DoctorReports = () => {
 
     addFooter(doc);
 
-    const fileName = reportType === 'patient' && selectedPatient
-      ? `relatorio-${selectedPatient.name.replace(/\\s/g, '-').toLowerCase()}.pdf`
+    const fileName = reportType === 'patient' && selectedReport
+      ? `relatorio-${selectedReport.patientName.replace(/\s/g, '-').toLowerCase()}.pdf`
       : `relatorio-mensal-${format(new Date(), 'yyyy-MM')}.pdf`;
 
     doc.save(fileName);
@@ -116,9 +99,27 @@ const DoctorReports = () => {
   };
 
   const saveToSystem = () => {
-    // Mock save to system
+    if (reportType === 'patient' && selectedReport) {
+      // Create new version in context if needed, but since mock data is state, we just add it to patientFiles list if 'Enviar' is clicked.
+      // We will only do simple toast for Save.
+    }
     setReportModalOpen(false);
     toast.success('Relatório salvo no sistema com sucesso!');
+  };
+
+  const handleSendToPatient = () => {
+    if (reportType !== 'patient' || !selectedReport) return;
+
+    sendFileToPatient({
+      name: `Relatório Médico - ${selectedReport.date}`,
+      type: 'PDF',
+      date: selectedReport.date,
+      size: 'Aprox. 150 KB',
+      content: reportText
+    }, selectedReport.id);
+
+    setReportModalOpen(false);
+    toast.success('Relatório salvo e enviado com sucesso para o paciente!');
   };
 
   return (
@@ -145,56 +146,86 @@ const DoctorReports = () => {
 
       {/* Patient Reports List */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-4">Relatórios por Paciente</h2>
-        <div className="space-y-3">
-          {mockPatients.map(patient => (
-            <div key={patient.id} className="speedmed-card flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-                  <User className="w-5 h-5 text-accent-foreground" />
+        <h2 className="text-lg font-semibold text-foreground mb-4">Relatórios / Rascunhos de Pacientes</h2>
+        {doctorReports.length === 0 ? (
+          <p className="text-muted-foreground bg-card p-6 rounded-xl border border-border text-center">Nenhum relatório gerado no momento. Vá para a tela de Pacientes para gerar um relatório.</p>
+        ) : (
+          <div className="space-y-3">
+            {doctorReports.map(report => (
+              <div key={report.id} className="speedmed-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Relatório: {report.patientName}</p>
+                    <p className="text-sm text-muted-foreground">Gerado em: {report.date}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground">{patient.name}</p>
-                  <p className="text-sm text-muted-foreground">{patient.age} anos</p>
+                <div className="flex items-center gap-4">
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${report.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {report.status === 'sent' ? 'Enviado' : 'Rascunho'}
+                  </span>
+                  <Button variant="outline" onClick={() => openReportModal('patient', report)} className="gap-2 bg-secondary text-secondary-foreground">
+                    <Edit className="w-4 h-4" /> Visualizar / Editar
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => openReportModal('patient', patient.id)} className="gap-2 bg-secondary text-secondary-foreground">
-                  <Edit className="w-4 h-4" /> Detalhes e Edição
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Report Editor Modal */}
+      {/* Report Editor Modal (Fullscreen) */}
       <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              {reportType === 'patient' ? `Relatório: ${selectedPatient?.name}` : 'Relatório Mensal'}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent className="max-w-none w-screen h-screen m-0 rounded-none p-0 flex flex-col bg-background border-none gap-0">
+          <div className="flex-1 flex flex-col h-full max-w-5xl mx-auto w-full">
+            <DialogHeader className="p-6 border-b border-border flex flex-row items-center justify-between">
+              <div>
+                <DialogTitle className="text-2xl">
+                  {reportType === 'patient' ? `Edição de Relatório - ${selectedReport?.patientName}` : 'Relatório Mensal Geral'}
+                </DialogTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Verifique e preencha os campos vitais do relatório.
+                </p>
+              </div>
+            </DialogHeader>
 
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Verifique ou edite as informações do relatório antes de salvar no sistema ou exportar para PDF.
-            </p>
+            <div className="p-6 flex-1 flex flex-col gap-6 overflow-hidden">
+              <div className="flex-1 flex flex-col relative rounded-xl border border-input focus-within:ring-2 focus-within:ring-primary overflow-hidden">
+                <textarea
+                  className="flex-1 w-full p-6 bg-background text-base resize-none focus:outline-none font-mono leading-relaxed"
+                  value={reportText}
+                  onChange={(e) => setReportText(e.target.value)}
+                  placeholder="Digite os detalhes do relatório..."
+                />
+              </div>
+            </div>
 
-            <textarea
-              className="w-full min-h-[300px] p-4 rounded-lg border border-input bg-background text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary font-mono"
-              value={reportText}
-              onChange={(e) => setReportText(e.target.value)}
-            />
+            <div className="p-6 border-t border-border flex justify-between items-center bg-card">
+              <DialogClose asChild>
+                <Button variant="outline">Fechar Tela</Button>
+              </DialogClose>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
-              <Button variant="outline" onClick={saveToSystem} className="gap-2">
-                <Save className="w-4 h-4" /> Salvar no Sistema
-              </Button>
-              <Button onClick={downloadPDF} className="gap-2">
-                <Download className="w-4 h-4" /> Baixar PDF
-              </Button>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={saveToSystem} className="gap-2">
+                  <Save className="w-4 h-4" /> Salvar Rascunho
+                </Button>
+                <Button variant="outline" onClick={downloadPDF} className="gap-2 border-primary text-primary hover:bg-primary/10">
+                  <Download className="w-4 h-4" /> Baixar PDF Pessoal
+                </Button>
+
+                {reportType === 'patient' && selectedReport?.status !== 'sent' && (
+                  <Button onClick={handleSendToPatient} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+                    <Send className="w-4 h-4" /> Salvar e Enviar para Paciente
+                  </Button>
+                )}
+                {reportType === 'patient' && selectedReport?.status === 'sent' && (
+                  <Button disabled className="gap-2 bg-green-800 text-white">
+                    <Send className="w-4 h-4" /> Já Enviado
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </DialogContent>

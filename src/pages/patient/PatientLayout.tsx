@@ -19,7 +19,7 @@ const PatientLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const { patientUnreadCount } = useAppointments();
+  const { patientUnreadCount, patientFilesUnreadCount } = useAppointments();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -45,6 +45,11 @@ const PatientLayout = () => {
                 {item.path === '/patient/appointments' && patientUnreadCount > 0 && (
                   <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                     {patientUnreadCount}
+                  </span>
+                )}
+                {item.path === '/patient/files' && patientFilesUnreadCount > 0 && (
+                  <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {patientFilesUnreadCount}
                   </span>
                 )}
               </button>
