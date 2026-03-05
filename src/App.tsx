@@ -3,36 +3,59 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { AppointmentProvider } from "./contexts/AppointmentContext";
 import Login from "./pages/Login";
 import DoctorLayout from "./components/DoctorLayout";
 import DoctorHome from "./pages/doctor/DoctorHome";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
 import DoctorPatients from "./pages/doctor/DoctorPatients";
 import DoctorReports from "./pages/doctor/DoctorReports";
+import DoctorSettings from "./pages/doctor/DoctorSettings";
+import PatientLayout from "./pages/patient/PatientLayout";
 import PatientHome from "./pages/patient/PatientHome";
+import PatientAppointments from "./pages/patient/PatientAppointments";
+import PatientTreatments from "./pages/patient/PatientTreatments";
+import PatientFiles from "./pages/patient/PatientFiles";
+import PatientHistory from "./pages/patient/PatientHistory";
+import PatientSchedule from "./pages/patient/PatientSchedule";
+import PatientSettings from "./pages/patient/PatientSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/doctor" element={<DoctorLayout />}>
-            <Route index element={<DoctorHome />} />
-            <Route path="appointments" element={<DoctorAppointments />} />
-            <Route path="patients" element={<DoctorPatients />} />
-            <Route path="reports" element={<DoctorReports />} />
-          </Route>
-          <Route path="/patient" element={<PatientHome />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <AppointmentProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/doctor" element={<DoctorLayout />}>
+                <Route index element={<DoctorHome />} />
+                <Route path="appointments" element={<DoctorAppointments />} />
+                <Route path="patients" element={<DoctorPatients />} />
+                <Route path="reports" element={<DoctorReports />} />
+                <Route path="settings" element={<DoctorSettings />} />
+              </Route>
+              <Route path="/patient" element={<PatientLayout />}>
+                <Route index element={<PatientHome />} />
+                <Route path="appointments" element={<PatientAppointments />} />
+                <Route path="treatments" element={<PatientTreatments />} />
+                <Route path="files" element={<PatientFiles />} />
+                <Route path="history" element={<PatientHistory />} />
+                <Route path="schedule" element={<PatientSchedule />} />
+                <Route path="settings" element={<PatientSettings />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AppointmentProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
