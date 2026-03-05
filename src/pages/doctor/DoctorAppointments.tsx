@@ -1,184 +1,216 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
-import { mockAppointments, mockPatients } from '@/data/mockData';
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay } from 'date-fns';
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye, Plus, Check, X } from 'lucide-react';
+import { mockPatients } from '@/data/mockData';
+import { useAppointments } from '@/contexts/AppointmentContext';
+import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, isFuture } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PatientRecord from '@/components/PatientRecord';
 
 const DoctorAppointments = () => {
+  const { appointments, updateAppointmentStatus, addAppointment } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [showNewAppt, setShowNewAppt] = useState(false);
+  const [newAppt, setNewAppt] = useState({ patientId: '', date: '', time: '', type: 'Consulta', reason: '' });
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
   const startDayOfWeek = getDay(monthStart);
 
   const appointmentsForDate = (date: Date) =>
-    mockAppointments.filter(a => isSameDay(parseISO(a.date), date));
+    appointments.filter(a => isSameDay(parseISO(a.date), date));
 
   const filteredAppointments = selectedDate
     ? appointmentsForDate(selectedDate)
-    : mockAppointments.filter(a => isSameMonth(parseISO(a.date), currentMonth));
+    : appointments.filter(a => isSameMonth(parseISO(a.date), currentMonth));
 
   const statusColors: Record<string, string> = {
-    confirmado: 'bg-green-100 text-green-700',
-    pendente: 'bg-yellow-100 text-yellow-700',
-    cancelado: 'bg-red-100 text-red-700',
-    realizado: 'bg-blue-100 text-blue-700',
+    confirmado: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    pendente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    cancelado: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    realizado: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   };
 
-  const selectedPatient = selectedPatientId
-    ? mockPatients.find(p => p.id === selectedPatientId)
-    : null;
+  const selectedPatient = selectedPatientId ? mockPatients.find(p => p.id === selectedPatientId) : null;
+
+  const handleCreateAppt = () => {
+    const patient = mockPatients.find(p => p.id === newAppt.patientId);
+    if (!patient || !newAppt.date || !newAppt.time) return;
+    addAppointment({
+      patientId: patient.id,
+      patientName: patient.name,
+      date: newAppt.date,
+      time: newAppt.time,
+      type: newAppt.type,
+      status: 'confirmado',
+      location: 'Clínica SpeedMed - Unidade Centro',
+      reason: newAppt.reason || 'Consulta médica',
+    });
+    setShowNewAppt(false);
+    setNewAppt({ patientId: '', date: '', time: '', type: 'Consulta', reason: '' });
+  };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'var(--font-heading)' }}>
-        Agendamentos
-      </h1>
-
-      {/* Calendar */}
-      <div className="speedmed-card">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 text-foreground" />
-          </button>
-          <h2 className="text-lg font-semibold text-foreground capitalize">
-            {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
-          </h2>
-          <button
-            onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors"
-          >
-            <ChevronRight className="w-5 h-5 text-foreground" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-            <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: startDayOfWeek }).map((_, i) => (
-            <div key={`empty-${i}`} />
-          ))}
-          {daysInMonth.map(day => {
-            const dayAppointments = appointmentsForDate(day);
-            const isSelected = selectedDate && isSameDay(day, selectedDate);
-            const isToday = isSameDay(day, new Date());
-
-            return (
-              <button
-                key={day.toISOString()}
-                onClick={() => setSelectedDate(isSelected ? null : day)}
-                className={`relative p-2 rounded-lg text-sm transition-all min-h-[48px] ${
-                  isSelected
-                    ? 'bg-primary text-primary-foreground font-bold'
-                    : isToday
-                    ? 'bg-accent text-accent-foreground font-semibold'
-                    : 'hover:bg-secondary text-foreground'
-                }`}
-              >
-                {format(day, 'd')}
-                {dayAppointments.length > 0 && (
-                  <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
-                    isSelected ? 'bg-primary-foreground' : 'bg-primary'
-                  }`} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {selectedDate && (
-          <button
-            onClick={() => setSelectedDate(null)}
-            className="mt-4 text-sm text-primary font-medium hover:underline"
-          >
-            Ver todo o mês
-          </button>
-        )}
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-foreground">Agendamentos</h1>
+        <Button onClick={() => setShowNewAppt(true)} className="gap-2">
+          <Plus className="w-4 h-4" /> Novo Agendamento
+        </Button>
       </div>
 
-      {/* Appointments list */}
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
-          {selectedDate
-            ? `Agendamentos - ${format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}`
-            : `Agendamentos de ${format(currentMonth, 'MMMM', { locale: ptBR })}`
-          }
-        </h2>
-
-        {filteredAppointments.length === 0 ? (
-          <div className="speedmed-card text-center py-8">
-            <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">Nenhum agendamento encontrado</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Calendar */}
+        <div className="speedmed-card">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary"><ChevronLeft className="w-5 h-5 text-foreground" /></button>
+            <h2 className="text-base font-semibold text-foreground capitalize">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</h2>
+            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary"><ChevronRight className="w-5 h-5 text-foreground" /></button>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredAppointments.map(appt => (
-              <div key={appt.id} className="speedmed-card flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-                    <span className="text-accent-foreground font-semibold text-sm">
-                      {appt.patientName.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">{appt.patientName}</p>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {format(parseISO(appt.date), 'dd/MM/yyyy')}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {appt.time}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5" />
-                        {appt.location}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">Motivo: {appt.reason}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[appt.status]}`}>
-                    {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
-                  </span>
-                  <button
-                    onClick={() => setSelectedPatientId(appt.patientId)}
-                    className="p-2 rounded-lg hover:bg-secondary transition-colors"
-                    title="Ver ficha do paciente"
-                  >
-                    <Eye className="w-4 h-4 text-primary" />
-                  </button>
-                </div>
-              </div>
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
+              <div key={i} className="text-center text-xs font-medium text-muted-foreground py-1">{day}</div>
             ))}
           </div>
-        )}
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: startDayOfWeek }).map((_, i) => <div key={`e-${i}`} />)}
+            {daysInMonth.map(day => {
+              const dayAppts = appointmentsForDate(day);
+              const isSelected = selectedDate && isSameDay(day, selectedDate);
+              const isToday = isSameDay(day, new Date());
+              return (
+                <button
+                  key={day.toISOString()}
+                  onClick={() => setSelectedDate(isSelected ? null : day)}
+                  className={`relative p-1.5 rounded-lg text-sm transition-all aspect-square flex items-center justify-center ${
+                    isSelected ? 'bg-primary text-primary-foreground font-bold' :
+                    isToday ? 'bg-accent text-accent-foreground font-semibold' :
+                    'hover:bg-secondary text-foreground'
+                  }`}
+                >
+                  {format(day, 'd')}
+                  {dayAppts.length > 0 && (
+                    <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSelected ? 'bg-primary-foreground' : 'bg-primary'}`} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {selectedDate && (
+            <button onClick={() => setSelectedDate(null)} className="mt-3 text-xs text-primary font-medium hover:underline">Ver todo o mês</button>
+          )}
+        </div>
+
+        {/* Appointments list */}
+        <div className="lg:col-span-2 space-y-3">
+          <h2 className="text-lg font-semibold text-foreground">
+            {selectedDate ? `Agendamentos - ${format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}` : `Agendamentos de ${format(currentMonth, 'MMMM', { locale: ptBR })}`}
+          </h2>
+          {filteredAppointments.length === 0 ? (
+            <div className="speedmed-card text-center py-8">
+              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">Nenhum agendamento encontrado</p>
+            </div>
+          ) : (
+            filteredAppointments.map(appt => (
+              <div key={appt.id} className="speedmed-card">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
+                      <span className="text-accent-foreground font-semibold text-sm">{appt.patientName.split(' ').map(n => n[0]).join('')}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{appt.patientName}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        <span>{format(parseISO(appt.date), 'dd/MM/yyyy')}</span>
+                        <span>•</span>
+                        <span>{appt.time}</span>
+                        <span>•</span>
+                        <span>{appt.type}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{appt.location}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[appt.status]}`}>
+                      {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
+                    </span>
+                    {appt.status === 'pendente' && (
+                      <>
+                        <button onClick={() => updateAppointmentStatus(appt.id, 'confirmado')} className="p-1.5 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30" title="Confirmar">
+                          <Check className="w-4 h-4 text-green-600" />
+                        </button>
+                        <button onClick={() => updateAppointmentStatus(appt.id, 'cancelado')} className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30" title="Cancelar">
+                          <X className="w-4 h-4 text-red-600" />
+                        </button>
+                      </>
+                    )}
+                    <button onClick={() => setSelectedPatientId(appt.patientId)} className="p-1.5 rounded-lg hover:bg-secondary" title="Ver ficha">
+                      <Eye className="w-4 h-4 text-primary" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Patient Record Modal */}
       <Dialog open={!!selectedPatient} onOpenChange={() => setSelectedPatientId(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle style={{ fontFamily: 'var(--font-heading)' }}>Ficha do Paciente</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Ficha do Paciente</DialogTitle></DialogHeader>
           {selectedPatient && <PatientRecord patient={selectedPatient} />}
+        </DialogContent>
+      </Dialog>
+
+      {/* New appointment modal */}
+      <Dialog open={showNewAppt} onOpenChange={setShowNewAppt}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Novo Agendamento</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground">Paciente</label>
+              <Select value={newAppt.patientId} onValueChange={v => setNewAppt(p => ({ ...p, patientId: v }))}>
+                <SelectTrigger><SelectValue placeholder="Selecione o paciente" /></SelectTrigger>
+                <SelectContent>
+                  {mockPatients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-foreground">Data</label>
+                <Input type="date" value={newAppt.date} onChange={e => setNewAppt(p => ({ ...p, date: e.target.value }))} />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">Hora</label>
+                <Input type="time" value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Tipo</label>
+              <Select value={newAppt.type} onValueChange={v => setNewAppt(p => ({ ...p, type: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Consulta">Consulta</SelectItem>
+                  <SelectItem value="Retorno">Retorno</SelectItem>
+                  <SelectItem value="Exame">Exame</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Motivo</label>
+              <Input value={newAppt.reason} onChange={e => setNewAppt(p => ({ ...p, reason: e.target.value }))} placeholder="Motivo da consulta" />
+            </div>
+            <Button onClick={handleCreateAppt} className="w-full">Agendar</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
