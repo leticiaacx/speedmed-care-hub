@@ -1,6 +1,6 @@
 # SpeedMed Care Hub
 
-## 🏥 Sobre o Projeto
+## Sobre o Projeto
 
 O **SpeedMed Care Hub** é uma plataforma completa para a gestão de saúde e atendimento médico. O sistema foi desenvolvido para facilitar a interação e o acompanhamento clínico, conectando pacientes, médicos e administradores em um único portal integrado. 
 
@@ -10,14 +10,14 @@ A aplicação possui painéis dedicados com funcionalidades específicas para di
 - **Médicos (Doctor Portal):** Acompanhamento de pacientes, registro de consultas, geração de relatórios de saúde e agendamento.
 - **Pacientes:** Acesso a registros médicos, agendamento de consultas e acompanhamento de saúde.
 
-## 🚀 Funcionalidades Principais
+## Funcionalidades Principais
 
 - **Autenticação Baseada em Regras:** Login seguro e direcionamento para painéis específicos de acordo com o papel do usuário (Admin, Médico, Paciente).
 - **Cadastro e Gestão de Pacientes:** Interface otimizada para médicos e administradores registrarem e atualizarem o histórico dos pacientes.
 - **Geração de Relatórios:** Criação de relatórios detalhados para acompanhamento médico, com possibilidade de gerar PDFs do quadro de saúde e exames.
 - **Interface Intuitiva:** Design moderno, dinâmico e focado na melhor experiência do usuário (UX).
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 Este projeto foi construído utilizando as seguintes tecnologias:
 
@@ -28,7 +28,7 @@ Este projeto foi construído utilizando as seguintes tecnologias:
 - **Tailwind CSS:** Framework utilitário de CSS para estilizar layouts complexos rapidamente.
 - **React Router Dom:** Gerenciamento seguro de rotas do lado do cliente.
 
-## 📋 Como Executar o Projeto Localmente
+## Como Executar o Projeto Localmente
 
 **Pré-requisitos:** É necessário ter o **Node.js** e o **npm** instalados na sua máquina.
 
@@ -50,12 +50,3 @@ npm run dev
 
 A aplicação estará disponível no seu navegador local, geralmente no endereço `http://localhost:5173/`.
 
-## 👨‍💻 Contribuição do Repositório
-
-Sinta-se à vontade para ajudar este projeto a crescer:
-
-1. Faça um Fork do projeto
-2. Crie uma branch para a sua feature (`git checkout -b feature/MinhaFeature`)
-3. Faça o commit das suas alterações (`git commit -m 'Adiciona uma nova feature X'`)
-4. Faça o push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request e aguarde as análises!
