@@ -74,11 +74,11 @@ const App = () => (
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AppointmentProvider>
-      </UserProvider>
-    </ThemeProvider>
+            </TooltipProvider>
+          </AppointmentProvider>
+        </UserProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
