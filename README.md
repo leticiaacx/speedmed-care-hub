@@ -1,73 +1,61 @@
-# Welcome to your Lovable project
+# SpeedMed Care Hub
 
-## Project info
+## 🏥 Sobre o Projeto
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+O **SpeedMed Care Hub** é uma plataforma completa para a gestão de saúde e atendimento médico. O sistema foi desenvolvido para facilitar a interação e o acompanhamento clínico, conectando pacientes, médicos e administradores em um único portal integrado. 
 
-## How can I edit this code?
+A aplicação possui painéis dedicados com funcionalidades específicas para diferentes tipos de usuários:
 
-There are several ways of editing your application.
+- **Administradores:** Visão geral do sistema e gerenciamento de usuários.
+- **Médicos (Doctor Portal):** Acompanhamento de pacientes, registro de consultas, geração de relatórios de saúde e agendamento.
+- **Pacientes:** Acesso a registros médicos, agendamento de consultas e acompanhamento de saúde.
 
-**Use Lovable**
+## 🚀 Funcionalidades Principais
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Autenticação Baseada em Regras:** Login seguro e direcionamento para painéis específicos de acordo com o papel do usuário (Admin, Médico, Paciente).
+- **Cadastro e Gestão de Pacientes:** Interface otimizada para médicos e administradores registrarem e atualizarem o histórico dos pacientes.
+- **Geração de Relatórios:** Criação de relatórios detalhados para acompanhamento médico, com possibilidade de gerar PDFs do quadro de saúde e exames.
+- **Interface Intuitiva:** Design moderno, dinâmico e focado na melhor experiência do usuário (UX).
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tecnologias Utilizadas
 
-**Use your preferred IDE**
+Este projeto foi construído utilizando as seguintes tecnologias:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **React:** Biblioteca principal para renderização de interface de usuário focada em componentes.
+- **Vite:** Ferramenta de build extremamente rápida com Hot Module Replacement (HMR).
+- **TypeScript:** Tipagem estática para JavaScript que aumenta a previsibilidade e a robustez do código.
+- **shadcn-ui & Radix UI:** Componentes de interface modulares, sem estilo pré-definido, altamente acessíveis.
+- **Tailwind CSS:** Framework utilitário de CSS para estilizar layouts complexos rapidamente.
+- **React Router Dom:** Gerenciamento seguro de rotas do lado do cliente.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 📋 Como Executar o Projeto Localmente
 
-Follow these steps:
+**Pré-requisitos:** É necessário ter o **Node.js** e o **npm** instalados na sua máquina.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Siga os passos abaixo:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+# Passo 1: Clone o repositório utilizando a sua URL do Git
+git clone <SUA_URL_DO_GIT>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Passo 2: Acesse o diretório principal do projeto
+cd speedmed-care-hub
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Passo 3: Instale as dependências necessárias
+npm install
+
+# Passo 4: Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+A aplicação estará disponível no seu navegador local, geralmente no endereço `http://localhost:5173/`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 👨‍💻 Contribuição do Repositório
 
-**Use GitHub Codespaces**
+Sinta-se à vontade para ajudar este projeto a crescer:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Faça um Fork do projeto
+2. Crie uma branch para a sua feature (`git checkout -b feature/MinhaFeature`)
+3. Faça o commit das suas alterações (`git commit -m 'Adiciona uma nova feature X'`)
+4. Faça o push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request e aguarde as análises!
