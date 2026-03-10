@@ -68,9 +68,9 @@ const DoctorSidebar = () => {
             logout();
             navigate('/');
           }}
-          className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary py-2 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-2 text-sm text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-950/30 py-3 rounded-lg transition-colors border border-red-200 dark:border-red-900 mt-2"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-5 h-5" />
           <span>Sair do Sistema</span>
         </button>
       </div>

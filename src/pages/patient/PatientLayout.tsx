@@ -4,6 +4,7 @@ import speedmedLogo from '@/assets/speedmed-logo.png';
 import { mockPatientUser } from '@/data/mockData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
+import { useUser } from '@/contexts/UserContext';
 
 const menuItems = [
   { icon: Home, label: 'Início', path: '/patient' },
@@ -20,6 +21,7 @@ const PatientLayout = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { patientUnreadCount, patientFilesUnreadCount } = useAppointments();
+  const { logout } = useUser();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -75,7 +77,7 @@ const PatientLayout = () => {
 
       {/* Mobile nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 flex justify-around py-2 px-1">
-        {menuItems.slice(0, 5).map(item => {
+        {menuItems.slice(0, 4).map(item => {
           const isActive = location.pathname === item.path;
           return (
             <button key={item.path} onClick={() => navigate(item.path)} className="flex flex-col items-center gap-0.5 p-1">
@@ -84,6 +86,10 @@ const PatientLayout = () => {
             </button>
           );
         })}
+        <button onClick={() => { logout(); navigate('/'); }} className="flex flex-col items-center gap-0.5 p-1">
+          <LogOut className="w-5 h-5 text-red-500" />
+          <span className="text-[10px] text-red-500 font-bold">Sair</span>
+        </button>
       </div>
 
       <main className="flex-1 p-4 md:p-8 overflow-auto pb-20 lg:pb-8">
