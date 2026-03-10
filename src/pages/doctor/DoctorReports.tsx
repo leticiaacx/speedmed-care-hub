@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const DoctorReports = () => {
-  const { appointments, doctorReports, saveDoctorReport, sendFileToPatient } = useAppointments();
+  const { appointments, doctorReports, saveDoctorReport, updateDoctorReport, sendFileToPatient } = useAppointments();
 
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportType, setReportType] = useState<'monthly' | 'patient'>('monthly');
@@ -100,8 +100,7 @@ const DoctorReports = () => {
 
   const saveToSystem = () => {
     if (reportType === 'patient' && selectedReport) {
-      // Create new version in context if needed, but since mock data is state, we just add it to patientFiles list if 'Enviar' is clicked.
-      // We will only do simple toast for Save.
+      updateDoctorReport(selectedReport.id, reportText);
     }
     setReportModalOpen(false);
     toast.success('Relatório salvo no sistema com sucesso!');
@@ -109,6 +108,9 @@ const DoctorReports = () => {
 
   const handleSendToPatient = () => {
     if (reportType !== 'patient' || !selectedReport) return;
+
+    // First ensure the latest text is saved
+    updateDoctorReport(selectedReport.id, reportText);
 
     sendFileToPatient({
       name: `Relatório Médico - ${selectedReport.date}`,

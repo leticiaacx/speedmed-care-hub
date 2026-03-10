@@ -1,19 +1,24 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useUser, UserRole } from '@/contexts/UserContext';
 import speedmedLogo from '@/assets/speedmed-logo.png';
 import loginBg from '@/assets/login-bg.jpg';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState<'doctor' | 'patient'>('doctor');
+  const [userType, setUserType] = useState<UserRole>('patient');
   const navigate = useNavigate();
+  const { login } = useUser();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate(userType === 'doctor' ? '/doctor' : '/patient');
+    login(userType); // login using mock data for now
+    if (userType === 'admin') navigate('/admin');
+    else if (userType === 'doctor') navigate('/doctor');
+    else navigate('/patient');
   };
 
   return (
@@ -31,24 +36,36 @@ const Login = () => {
           </div>
 
           {/* Type selector */}
-          <div className="flex gap-3">
+          <div className="flex bg-secondary p-1 rounded-xl">
             <button
+              type="button"
+              onClick={() => setUserType('patient')}
+              className={`flex-1 py-2 rounded-lg font-medium text-sm transition-all ${userType === 'patient'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              Paciente
+            </button>
+            <button
+              type="button"
               onClick={() => setUserType('doctor')}
-              className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${userType === 'doctor'
-                ? 'bg-primary text-primary-foreground shadow-lg'
-                : 'bg-secondary text-secondary-foreground hover:bg-muted'
+              className={`flex-1 py-2 rounded-lg font-medium text-sm transition-all ${userType === 'doctor'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
                 }`}
             >
               Médico
             </button>
             <button
-              onClick={() => setUserType('patient')}
-              className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all ${userType === 'patient'
-                ? 'bg-primary text-primary-foreground shadow-lg'
-                : 'bg-secondary text-secondary-foreground hover:bg-muted'
+              type="button"
+              onClick={() => setUserType('admin')}
+              className={`flex-1 py-2 rounded-lg font-medium text-sm transition-all ${userType === 'admin'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
                 }`}
             >
-              Paciente
+              Hospital
             </button>
           </div>
 
@@ -80,7 +97,7 @@ const Login = () => {
 
           <p className="text-center text-sm text-muted-foreground">
             Não tem uma conta?{' '}
-            <span className="text-primary font-medium cursor-pointer hover:underline">Cadastre-se agora!</span>
+            <Link to="/register" className="text-primary font-medium hover:underline">Cadastre-se agora!</Link>
           </p>
         </div>
       </div>

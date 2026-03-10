@@ -1,9 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, ClipboardList, FileText, Home, LogOut, Settings, User, Moon, Sun, Bell } from 'lucide-react';
 import speedmedLogo from '@/assets/speedmed-logo.png';
-import { mockDoctor } from '@/data/mockData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
+import { useUser, Doctor } from '@/contexts/UserContext';
 
 const menuItems = [
   { icon: Home, label: 'Painel', path: '/doctor' },
@@ -18,6 +18,8 @@ const DoctorSidebar = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { unreadCount, pendingAppointmentsCount } = useAppointments();
+  const { currentUser, logout } = useUser();
+  const doctor = currentUser as Doctor | null;
 
   return (
     <aside className="w-64 min-h-screen flex flex-col bg-card border-r border-border">
@@ -54,15 +56,18 @@ const DoctorSidebar = () => {
       <div className="p-4 border-t border-border mt-auto">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-sm font-bold text-primary-foreground">{mockDoctor.name.split(' ').map(n => n[0]).join('').substring(0, 2)}</span>
+            <span className="text-sm font-bold text-primary-foreground">{doctor?.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2) || 'MD'}</span>
           </div>
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium text-foreground truncate" title={mockDoctor.name}>{mockDoctor.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{mockDoctor.specialty}</p>
+            <p className="text-sm font-medium text-foreground truncate" title={doctor?.name || ''}>{doctor?.name || 'Médico'}</p>
+            <p className="text-xs text-muted-foreground truncate">{doctor?.specialty || 'Especialidade'}</p>
           </div>
         </div>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => {
+            logout();
+            navigate('/');
+          }}
           className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary py-2 rounded-lg transition-colors"
         >
           <LogOut className="w-4 h-4" />

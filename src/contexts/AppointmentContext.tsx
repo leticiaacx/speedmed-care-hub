@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { mockAppointments, Appointment } from '@/data/mockData';
+import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -32,12 +33,13 @@ interface AppointmentContextType {
   notifications: Notification[];
   patientFiles: PatientFile[];
   doctorReports: DoctorReport[];
-  addAppointment: (appt: Omit<Appointment, 'id'>) => void;
-  updateAppointmentStatus: (id: string, status: Appointment['status']) => void;
+  addAppointment: (appt: Omit<Appointment, 'id'>) => { success: boolean; error?: string };
+  updateAppointmentStatus: (id: string, status: Appointment['status'], reason?: string) => void;
   markNotificationRead: (id: string) => void;
   clearPatientNotifications: () => void;
   clearPatientFileNotifications: () => void;
   saveDoctorReport: (report: Omit<DoctorReport, 'id'>) => void;
+  updateDoctorReport: (id: string, content: string) => void;
   sendFileToPatient: (file: Omit<PatientFile, 'id'>, reportId?: string) => void;
   unreadCount: number;
   pendingAppointmentsCount: number;
@@ -58,6 +60,15 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const [doctorReports, setDoctorReports] = useState<DoctorReport[]>([]);
 
   const addAppointment = useCallback((appt: Omit<Appointment, 'id'>) => {
+    // Advanced logic: Prevent double booking for the same date, time and doctor (using location/doctorName as proxy since we didn't add doctorId to appointments initially, but ideally we should).
+    // Let's assume for this mock we check date and time across the board, or specific to the patient.
+    const isConflict = appointments.some(a => a.date === appt.date && a.time === appt.time && a.status !== 'cancelado');
+
+    if (isConflict) {
+      toast.error('Este horário já está ocupado por outra consulta.');
+      return { success: false, error: 'Horário indisponível' };
+    }
+
     const newAppt: Appointment = { ...appt, id: `appt-${Date.now()}` };
     setAppointments(prev => [...prev, newAppt]);
     setNotifications(prev => [
@@ -70,16 +81,20 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
       },
       ...prev,
     ]);
-  }, []);
+    toast.success('Agendamento realizado com sucesso!');
+    return { success: true };
+  }, [appointments]);
 
-  const updateAppointmentStatus = useCallback((id: string, status: Appointment['status']) => {
+  const updateAppointmentStatus = useCallback((id: string, status: Appointment['status'], reason?: string) => {
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     const appt = appointments.find(a => a.id === id);
     if (appt) {
       setNotifications(prev => [
         {
           id: `notif-${Date.now()}`,
-          message: `Agendamento de ${appt.patientName} foi ${status}`,
+          message: status === 'cancelado'
+            ? `Agendamento de ${appt.patientName} recusado. Motivo: ${reason || 'Não informado'}`
+            : `Agendamento de ${appt.patientName} foi ${status}`,
           time: new Date(),
           read: false,
           type: 'confirmation',
@@ -104,6 +119,10 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const saveDoctorReport = useCallback((report: Omit<DoctorReport, 'id'>) => {
     const newReport = { ...report, id: `rep-${Date.now()}` };
     setDoctorReports(prev => [newReport, ...prev]);
+  }, []);
+
+  const updateDoctorReport = useCallback((id: string, content: string) => {
+    setDoctorReports(prev => prev.map(r => r.id === id ? { ...r, content } : r));
   }, []);
 
   const sendFileToPatient = useCallback((file: Omit<PatientFile, 'id'>, reportId?: string) => {
@@ -134,9 +153,9 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AppointmentContext.Provider value={{
       appointments, notifications, patientFiles, doctorReports,
-      addAppointment, updateAppointmentStatus, markNotificationRead, clearPatientNotifications, clearPatientFileNotifications,
-      saveDoctorReport, sendFileToPatient,
-      unreadCount, pendingAppointmentsCount, patientUnreadCount, patientFilesUnreadCount
+      addAppointment, updateAppointmentStatus, markNotificationRead, clearPatientNotifications,
+      clearPatientFileNotifications, saveDoctorReport, updateDoctorReport, sendFileToPatient, unreadCount,
+      pendingAppointmentsCount, patientUnreadCount, patientFilesUnreadCount
     }}>
       {children}
     </AppointmentContext.Provider>

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useAppointments } from '@/contexts/AppointmentContext';
+import { useUser } from '@/contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 
 interface PatientRecordProps {
@@ -25,7 +26,10 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
   const [newNote, setNewNote] = useState('');
 
   const { saveDoctorReport } = useAppointments();
+  const { userRole } = useUser();
   const navigate = useNavigate();
+
+  const isReadOnly = userRole === 'admin';
 
   const handleGenerateReport = () => {
     let reportContent = `RELATÓRIO MÉDICO - ${patient.name}\n`;
@@ -93,37 +97,43 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
             <p className="text-muted-foreground">{editedPatient.age} anos • CPF: {editedPatient.cpf}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          {onConcludeAppointment && (
-            <Button onClick={() => {
-              onConcludeAppointment();
-              toast.success('Consulta marcada como realizada!');
-            }} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
-              <CheckCircle className="w-4 h-4" />
-              Concluir Consulta
-            </Button>
-          )}
-
-          <Button variant="secondary" onClick={handleGenerateReport} className="gap-2 bg-primary/10 text-primary hover:bg-primary/20">
-            <FileText className="w-4 h-4" />
-            Gerar Relatório
-          </Button>
-
-          {isEditing ? (
-            <>
-              <Button variant="outline" onClick={handleCancel} className="gap-2">
-                <X className="w-4 h-4" /> Cancelar
+        {/* Action Buttons */}
+        {!isReadOnly && (
+          <div className="flex flex-wrap gap-3">
+            {onConcludeAppointment && (
+              <Button onClick={() => {
+                onConcludeAppointment();
+                toast.success('Consulta marcada como realizada!');
+              }} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircle className="w-4 h-4" />
+                Concluir Consulta
               </Button>
-              <Button onClick={handleSave} className="gap-2">
-                <Save className="w-4 h-4" /> Salvar Ficha
-              </Button>
-            </>
-          ) : (
-            <Button onClick={() => setIsEditing(true)} variant="outline" className="gap-2">
-              <Edit className="w-4 h-4" /> Editar Informações
+            )}
+
+            <Button variant="secondary" onClick={handleGenerateReport} className="gap-2 bg-primary/10 text-primary hover:bg-primary/20">
+              <FileText className="w-4 h-4" />
+              Gerar Relatório
             </Button>
-          )}
-        </div>
+
+            {isEditing ? (
+              <>
+                <Button variant="outline" onClick={handleCancel} className="gap-2">
+                  <X className="w-4 h-4" />
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Salvar Alterações
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setIsEditing(true)} className="gap-2">
+                <Edit className="w-4 h-4" />
+                Editar Ficha
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

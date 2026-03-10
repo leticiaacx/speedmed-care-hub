@@ -28,6 +28,7 @@ export interface Patient {
     time: string;
     type: string;
   };
+  doctorId?: string;
 }
 
 export interface Appointment {
@@ -47,14 +48,60 @@ export interface Doctor {
   name: string;
   specialty: string;
   crm: string;
+  schedule: {
+    dayOfWeek: number; // 0 = Sun, 1 = Mon, etc.
+    startTime: string; // '08:00'
+    endTime: string;   // '18:00'
+  }[];
+  email?: string;
+  phone?: string;
+  location?: string;
+  onlineConsultation?: boolean;
+}
+
+export interface Admin {
+  id: string;
+  name: string;
+  clinicName: string;
+  email: string;
 }
 
 export const mockDoctor: Doctor = {
-  id: '1',
+  id: 'd1',
   name: 'Dr. José da Silva Pereira',
   specialty: 'Clínico Geral',
   crm: 'CRM/SP 123456',
+  schedule: [
+    { dayOfWeek: 1, startTime: '08:00', endTime: '18:00' },
+    { dayOfWeek: 2, startTime: '08:00', endTime: '18:00' },
+    { dayOfWeek: 3, startTime: '08:00', endTime: '18:00' },
+    { dayOfWeek: 4, startTime: '08:00', endTime: '18:00' },
+    { dayOfWeek: 5, startTime: '08:00', endTime: '17:00' },
+  ],
 };
+
+export const mockDoctors: Doctor[] = [
+  mockDoctor,
+  {
+    id: 'd2',
+    name: 'Dra. Ana Costa Lima',
+    specialty: 'Cardiologia',
+    crm: 'CRM/SP 654321',
+    schedule: [
+      { dayOfWeek: 2, startTime: '09:00', endTime: '16:00' },
+      { dayOfWeek: 4, startTime: '09:00', endTime: '16:00' },
+    ],
+  }
+];
+
+export const mockAdmins: Admin[] = [
+  {
+    id: 'a1',
+    name: 'Admin Hospitalar',
+    clinicName: 'Clínica SpeedMed',
+    email: 'admin@speedmed.com'
+  }
+];
 
 export const mockPatients: Patient[] = [
   {
@@ -79,6 +126,7 @@ export const mockPatients: Patient[] = [
       { date: '2025-10-15', time: '09:30', type: 'Retorno', specialty: 'Clínico Geral', doctorName: 'Dra. Ana', diagnosis: 'Rotina normal' },
     ],
     nextAppointment: { date: '2026-03-10', time: '09:00', type: 'Retorno' },
+    doctorId: 'd1',
   },
   {
     id: '2',
@@ -101,6 +149,7 @@ export const mockPatients: Patient[] = [
       { date: '2026-02-15', time: '10:30', type: 'Consulta', specialty: 'Gastroenterologia', doctorName: 'Dr. Silva', diagnosis: 'Gastrite aguda' },
     ],
     nextAppointment: { date: '2026-03-12', time: '11:00', type: 'Consulta' },
+    doctorId: 'd1',
   },
   {
     id: '3',
@@ -124,6 +173,7 @@ export const mockPatients: Patient[] = [
       { date: '2026-01-10', time: '14:00', type: 'Consulta', specialty: 'Cardiologia', doctorName: 'Dra. Lima', diagnosis: 'Ajuste de dosagem' },
     ],
     nextAppointment: { date: '2026-03-15', time: '15:00', type: 'Retorno' },
+    doctorId: 'd1',
   },
   {
     id: '4',
@@ -145,6 +195,7 @@ export const mockPatients: Patient[] = [
     consultationHistory: [
       { date: '2026-03-01', time: '08:00', type: 'Consulta', specialty: 'Endocrinologia', doctorName: 'Dr. Costa', diagnosis: 'Diabetes Tipo 2' },
     ],
+    doctorId: 'd2',
   },
   {
     id: '5',
@@ -167,6 +218,7 @@ export const mockPatients: Patient[] = [
       { date: '2026-02-10', time: '13:00', type: 'Consulta', specialty: 'Clínico Geral', doctorName: 'Dra. Souza', diagnosis: 'Exames normais' },
     ],
     nextAppointment: { date: '2026-03-20', time: '14:00', type: 'Exame' },
+    doctorId: 'd1',
   },
 ];
 

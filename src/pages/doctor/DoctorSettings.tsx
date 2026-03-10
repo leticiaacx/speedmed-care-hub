@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { User, Bell, Shield, Globe, Palette, Save, Calendar, Clock, MapPin, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, Bell, Shield, Globe, Palette, Save, Calendar, Clock, MapPin, Check, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from '@/contexts/ThemeContext';
-import { mockDoctor } from '@/data/mockData';
-import { useToast } from '@/hooks/use-toast';
+import { useUser, Doctor } from '@/contexts/UserContext';
+import { toast } from 'sonner';
 
 const tabs = [
   { id: 'profile', label: 'Perfil', icon: User },
@@ -16,49 +16,82 @@ const tabs = [
   { id: 'appearance', label: 'Aparência', icon: Palette },
 ];
 
-const daysOfWeek = [
-  { id: 'mon', label: 'Segunda-feira' },
-  { id: 'tue', label: 'Terça-feira' },
-  { id: 'wed', label: 'Quarta-feira' },
-  { id: 'thu', label: 'Quinta-feira' },
-  { id: 'fri', label: 'Sexta-feira' },
-  { id: 'sat', label: 'Sábado' },
-  { id: 'sun', label: 'Domingo' },
-];
-
 const DoctorSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const { theme, toggleTheme } = useTheme();
-  const { toast } = useToast();
+  const { currentUser, updateDoctorSchedule } = useUser();
+  const doctor = currentUser as Doctor | null;
 
   const [profile, setProfile] = useState({
-    name: mockDoctor.name,
-    specialty: mockDoctor.specialty,
-    crm: mockDoctor.crm,
-    email: 'dr.felipe@speedmed.com',
-    phone: '(11) 99999-9999',
+    name: doctor?.name || '',
+    specialty: doctor?.specialty || '',
+    crm: doctor?.crm || '',
+    email: doctor?.email || '',
+    phone: doctor?.phone || '',
   });
 
-  const [availability, setAvailability] = useState({
-    activeDays: ['mon', 'tue', 'wed', 'thu', 'fri'],
-    startTime: '08:00',
-    endTime: '18:00',
-    interval: '30', // minutes
-    location: 'Clínica SpeedMed - Unidade Centro',
-    onlineConsultation: true
+  const [availability, setAvailability] = useState<{ location: string; onlineConsultation: boolean }>({
+    location: doctor?.location || 'Clínica SpeedMed - Unidade Centro',
+    onlineConsultation: doctor?.onlineConsultation ?? true
   });
 
-  const toggleDay = (dayId: string) => {
-    setAvailability(prev => ({
-      ...prev,
-      activeDays: prev.activeDays.includes(dayId)
-        ? prev.activeDays.filter(d => d !== dayId)
-        : [...prev.activeDays, dayId]
-    }));
+  // Clone schedule for editing
+  const [editingSchedule, setEditingSchedule] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>(doctor?.schedule || []);
+
+  const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+  useEffect(() => {
+    if (doctor) {
+      setProfile({
+        name: doctor.name,
+        specialty: doctor.specialty,
+        crm: doctor.crm,
+        email: doctor.email,
+        phone: doctor.phone,
+      });
+      setAvailability({
+        location: doctor.location || 'Clínica SpeedMed - Unidade Centro',
+        onlineConsultation: doctor.onlineConsultation || true
+      });
+      setEditingSchedule([...doctor.schedule]);
+    }
+  }, [doctor]);
+
+  const addScheduleRow = () => {
+    setEditingSchedule([...editingSchedule, { dayOfWeek: 1, startTime: '08:00', endTime: '18:00' }]);
   };
 
-  const handleSave = () => {
-    toast({ title: 'Configurações salvas', description: 'Suas alterações foram salvas com sucesso.' });
+  const updateScheduleRow = (index: number, field: string, value: string | number) => {
+    const updated = [...editingSchedule];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditingSchedule(updated);
+  };
+
+  const removeScheduleRow = (index: number) => {
+    setEditingSchedule(editingSchedule.filter((_, i) => i !== index));
+  };
+
+  const handleSaveProfile = () => {
+    // In a real app, you'd call an API to update the doctor's profile
+    toast.success('Perfil atualizado com sucesso!');
+  };
+
+  const handleSaveAvailability = () => {
+    // In a real app, you'd call an API to update the doctor's availability settings
+    toast.success('Configurações de disponibilidade salvas!');
+  };
+
+  const handleSaveSecurity = () => {
+    toast.success('Senha atualizada com sucesso!');
+  };
+
+  const handleSaveSchedule = () => {
+    if (doctor) {
+      updateDoctorSchedule(doctor.id, editingSchedule);
+      toast.success('Agenda atualizada com sucesso!');
+    } else {
+      toast.error('Erro ao salvar agenda: Doutor não encontrado.');
+    }
   };
 
   const activeContent = () => {
@@ -75,7 +108,7 @@ const DoctorSettings = () => {
               <div><label className="text-sm font-semibold text-foreground mb-1.5 block">Telefone de Contato</label><Input value={profile.phone} onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))} /></div>
             </div>
             <div className="pt-4 border-t border-border">
-              <Button onClick={handleSave} className="gap-2"><Save className="w-4 h-4" />Salvar Alterações</Button>
+              <Button onClick={handleSaveProfile} className="gap-2"><Save className="w-4 h-4" />Salvar Alterações</Button>
             </div>
           </div>
         );
@@ -113,68 +146,68 @@ const DoctorSettings = () => {
                 </div>
               </div>
 
-              {/* Dias e Horários */}
               <div className="p-5 rounded-xl border border-border bg-secondary/30">
                 <h3 className="font-semibold text-foreground flex items-center gap-2 mb-4">
                   <Clock className="w-5 h-5 text-primary" /> Grade de Horários
                 </h3>
 
-                <div className="mb-5">
-                  <label className="text-sm font-medium text-foreground block mb-2">Dias de Atendimento na Semana</label>
-                  <div className="flex flex-wrap gap-2">
-                    {daysOfWeek.map(day => {
-                      const isActive = availability.activeDays.includes(day.id);
-                      return (
-                        <button
-                          key={day.id}
-                          onClick={() => toggleDay(day.id)}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${isActive
-                              ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                              : 'bg-background text-foreground border-border hover:bg-secondary'
-                            }`}
-                        >
-                          {day.label.split('-')[0]}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                <div className="space-y-4">
+                  {editingSchedule.length === 0 ? (
+                    <div className="text-center p-6 border border-dashed border-border rounded-xl">
+                      <p className="text-muted-foreground text-sm">Nenhum horário definido.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {editingSchedule.map((sch, i) => (
+                        <div key={i} className="flex flex-col md:flex-row md:items-center gap-3 p-4 bg-background border border-border rounded-xl">
+                          <select
+                            className="bg-secondary border border-border rounded-lg px-3 py-2 text-sm"
+                            value={sch.dayOfWeek}
+                            onChange={(e) => updateScheduleRow(i, 'dayOfWeek', parseInt(e.target.value))}
+                          >
+                            {daysOfWeek.map((day, idx) => (
+                              <option key={idx} value={idx}>{day}</option>
+                            ))}
+                          </select>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="time"
+                              className="w-32"
+                              value={sch.startTime}
+                              onChange={(e) => updateScheduleRow(i, 'startTime', e.target.value)}
+                            />
+                            <span className="text-muted-foreground text-sm">até</span>
+                            <Input
+                              type="time"
+                              className="w-32"
+                              value={sch.endTime}
+                              onChange={(e) => updateScheduleRow(i, 'endTime', e.target.value)}
+                            />
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => removeScheduleRow(i)} className="text-destructive hover:bg-destructive/10 ml-auto w-full md:w-auto mt-2 md:mt-0">
+                            Remover
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-1.5">Horário de Início</label>
-                    <Input
-                      type="time"
-                      value={availability.startTime}
-                      onChange={e => setAvailability(a => ({ ...a, startTime: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-1.5">Horário de Término</label>
-                    <Input
-                      type="time"
-                      value={availability.endTime}
-                      onChange={e => setAvailability(a => ({ ...a, endTime: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-1.5">Duração da Consulta</label>
-                    <Select value={availability.interval} onValueChange={v => setAvailability(a => ({ ...a, interval: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15">15 Minutos</SelectItem>
-                        <SelectItem value="30">30 Minutos</SelectItem>
-                        <SelectItem value="45">45 Minutos</SelectItem>
-                        <SelectItem value="60">1 Hora</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="pt-2">
+                    <Button variant="outline" onClick={addScheduleRow} className="gap-2 w-full md:w-auto">
+                      <Plus className="w-4 h-4" /> Adicionar Período
+                    </Button>
                   </div>
                 </div>
               </div>
 
             </div>
-            <div className="pt-4 border-t border-border">
-              <Button onClick={handleSave} className="gap-2"><Save className="w-4 h-4" />Salvar Disponibilidade</Button>
+            <div className="pt-4 border-t border-border flex flex-wrap gap-3">
+              <Button onClick={handleSaveAvailability} variant="secondary" className="gap-2">
+                <Save className="w-4 h-4" /> Salvar Local
+              </Button>
+              <Button onClick={handleSaveSchedule} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+                <Save className="w-4 h-4" /> Salvar Agenda de Horários
+              </Button>
             </div>
           </div>
         );
@@ -182,20 +215,6 @@ const DoctorSettings = () => {
       case 'notifications':
         return (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-foreground">Notificações</h2>
-            <div className="space-y-1">
-              {[
-                { label: 'Novos agendamentos', desc: 'Receber notificação quando um paciente agendar consulta' },
-                { label: 'Confirmações', desc: 'Receber notificação quando um agendamento for confirmado' },
-                { label: 'Cancelamentos', desc: 'Receber notificação quando um agendamento for cancelado' },
-                { label: 'Lembretes', desc: 'Receber lembretes 2 dias antes das consultas' },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-border gap-3">
-                  <div><p className="text-sm font-semibold text-foreground">{item.label}</p><p className="text-sm text-muted-foreground">{item.desc}</p></div>
-                  <Switch defaultChecked />
-                </div>
-              ))}
-            </div>
           </div>
         );
 
@@ -209,7 +228,7 @@ const DoctorSettings = () => {
               <div><label className="text-sm font-semibold text-foreground block mb-1.5">Confirmar nova senha</label><Input type="password" placeholder="••••••••" /></div>
             </div>
             <div className="pt-4 mt-2 border-t border-border">
-              <Button onClick={handleSave} className="gap-2"><Shield className="w-4 h-4" />Alterar Senha</Button>
+              <Button onClick={handleSaveSecurity} className="gap-2"><Shield className="w-4 h-4" />Alterar Senha</Button>
             </div>
           </div>
         );
@@ -245,8 +264,8 @@ const DoctorSettings = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm whitespace-nowrap transition-all ${activeTab === tab.id
-                  ? 'bg-primary text-primary-foreground font-semibold shadow-md'
-                  : 'bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-transparent'
+                ? 'bg-primary text-primary-foreground font-semibold shadow-md'
+                : 'bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-transparent'
                 }`}
             >
               <tab.icon className="w-5 h-5" />

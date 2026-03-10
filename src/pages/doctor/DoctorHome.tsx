@@ -1,13 +1,16 @@
 import { Calendar, Clock, MapPin, Users, FileText, AlertCircle, TrendingUp, Activity, DollarSign } from 'lucide-react';
-import { mockDoctor, mockPatients } from '@/data/mockData';
 import { useNavigate } from 'react-router-dom';
 import { useAppointments } from '@/contexts/AppointmentContext';
+import { useUser, Doctor } from '@/contexts/UserContext';
 import { format, parseISO, isToday, isFuture } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const DoctorHome = () => {
   const navigate = useNavigate();
   const { appointments, notifications } = useAppointments();
+  const { currentUser } = useUser();
+  const doctor = currentUser as Doctor | null;
+
   const todayAppointments = appointments.filter(a => isToday(parseISO(a.date)));
   const upcomingAppointments = appointments
     .filter(a => isFuture(parseISO(a.date)))
@@ -42,7 +45,7 @@ const DoctorHome = () => {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Visão Geral</h1>
         <p className="text-muted-foreground mt-1">
-          Bem-vindo de volta, {mockDoctor.name.split(' ')[0]}. Aqui está o resumo de hoje.
+          Bem-vindo de volta, {doctor ? doctor.name.split(' ')[0] : 'Dr.'}. Aqui está o resumo de hoje.
         </p>
       </div>
 

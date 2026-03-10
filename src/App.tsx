@@ -4,8 +4,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { UserProvider } from "./contexts/UserContext";
 import { AppointmentProvider } from "./contexts/AppointmentContext";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+
+// Admin
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDoctors from "./pages/admin/AdminDoctors";
+import AdminAppointments from "./pages/admin/AdminAppointments";
+import AdminPatients from "./pages/admin/AdminPatients";
+
+// Doctor
 import DoctorLayout from "./components/DoctorLayout";
 import DoctorHome from "./pages/doctor/DoctorHome";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
@@ -27,34 +38,46 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <AppointmentProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/doctor" element={<DoctorLayout />}>
-                <Route index element={<DoctorHome />} />
-                <Route path="appointments" element={<DoctorAppointments />} />
-                <Route path="patients" element={<DoctorPatients />} />
-                <Route path="reports" element={<DoctorReports />} />
-                <Route path="settings" element={<DoctorSettings />} />
-              </Route>
-              <Route path="/patient" element={<PatientLayout />}>
-                <Route index element={<PatientHome />} />
-                <Route path="appointments" element={<PatientAppointments />} />
-                <Route path="treatments" element={<PatientTreatments />} />
-                <Route path="files" element={<PatientFiles />} />
-                <Route path="history" element={<PatientHistory />} />
-                <Route path="schedule" element={<PatientSchedule />} />
-                <Route path="settings" element={<PatientSettings />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AppointmentProvider>
+      <UserProvider>
+        <AppointmentProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="doctors" element={<AdminDoctors />} />
+                  <Route path="appointments" element={<AdminAppointments />} />
+                  <Route path="patients" element={<AdminPatients />} />
+                </Route>
+
+                <Route path="/doctor" element={<DoctorLayout />}>
+                  <Route index element={<DoctorHome />} />
+                  <Route path="appointments" element={<DoctorAppointments />} />
+                  <Route path="patients" element={<DoctorPatients />} />
+                  <Route path="reports" element={<DoctorReports />} />
+                  <Route path="settings" element={<DoctorSettings />} />
+                </Route>
+                <Route path="/patient" element={<PatientLayout />}>
+                  <Route index element={<PatientHome />} />
+                  <Route path="appointments" element={<PatientAppointments />} />
+                  <Route path="treatments" element={<PatientTreatments />} />
+                  <Route path="files" element={<PatientFiles />} />
+                  <Route path="history" element={<PatientHistory />} />
+                  <Route path="schedule" element={<PatientSchedule />} />
+                  <Route path="settings" element={<PatientSettings />} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AppointmentProvider>
+      </UserProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
