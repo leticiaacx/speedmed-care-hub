@@ -147,7 +147,7 @@ const DoctorAppointments = () => {
           ) : (
             filteredAppointments.map(appt => (
               <div key={appt.id} className="speedmed-card">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
                       <span className="text-accent-foreground font-semibold text-sm">{appt.patientName.split(' ').map(n => n[0]).join('')}</span>
@@ -164,16 +164,21 @@ const DoctorAppointments = () => {
                       <p className="text-xs text-muted-foreground mt-0.5">{appt.location}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-3 sm:mt-0 w-full sm:w-auto border-t sm:border-none border-border pt-3 sm:pt-0">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[appt.status]}`}>
                       {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
                     </span>
-                    <button onClick={() => setSelectedApptId(appt.id)} className="p-1.5 rounded-lg hover:bg-secondary border border-border" title="Ver Detalhes">
-                      <Eye className="w-4 h-4 text-primary" />
-                    </button>
                     {appt.status === 'pendente' && (
-                      <span className="text-xs text-muted-foreground ml-2">Revisão necessária</span>
+                      <span className="text-xs text-muted-foreground mr-auto sm:mr-0 pl-1">Revisão necessária</span>
                     )}
+                    <button
+                      onClick={() => setSelectedApptId(appt.id)}
+                      className="ml-auto sm:ml-2 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg hover:bg-secondary border border-border bg-card text-sm font-medium transition-colors"
+                      title="Ver Detalhes"
+                    >
+                      <Eye className="w-4 h-4 text-primary" />
+                      <span className="text-foreground">Detalhes</span>
+                    </button>
                   </div>
                 </div>
               </div>

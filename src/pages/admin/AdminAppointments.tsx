@@ -105,8 +105,8 @@ const AdminAppointments = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Button variant="ghost" size="sm" onClick={() => setSelectedApptId(appt.id)} className="text-primary hover:text-primary hover:bg-primary/10">
-                                                <Eye className="w-4 h-4 mr-2" /> Detalhes
+                                            <Button variant="outline" size="sm" onClick={() => setSelectedApptId(appt.id)} className="text-primary hover:text-primary hover:bg-primary/10 border-primary/20 bg-background w-full sm:w-auto">
+                                                <Eye className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Detalhes</span><span className="sm:hidden">Ver Detalhes</span>
                                             </Button>
                                         </td>
                                     </tr>

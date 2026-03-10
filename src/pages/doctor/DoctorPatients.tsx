@@ -103,10 +103,10 @@ const DoctorPatients = () => {
               </div>
               <button
                 onClick={() => setSelectedPatientId(patient.id)}
-                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors w-full sm:w-auto mt-3 sm:mt-0"
               >
-                <Eye className="w-4 h-4" />
-                Ver Ficha Completa
+                <Eye className="w-5 h-5 sm:w-4 sm:h-4" />
+                <span>Ver Prontuário</span>
               </button>
             </div>
           ))
