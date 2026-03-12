@@ -3,7 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Calendar, Stethoscope, LogOut, Moon, Sun, Menu, X } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUser } from '@/contexts/UserContext';
-import speedmedLogo from '@/assets/speedmed-logo.png';
+import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
 
 const AdminLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUser } from '@/contexts/UserContext';
-import speedmedLogo from '@/assets/speedmed-logo.png';
+import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
 import loginBg from '@/assets/login-bg.jpg';
 
 const Register = () => {

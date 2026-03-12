@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, ClipboardList, FileText, Home, LogOut, Settings, User, Moon, Sun, Bell } from 'lucide-react';
-import speedmedLogo from '@/assets/speedmed-logo.png';
+import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { useUser, Doctor } from '@/contexts/UserContext';

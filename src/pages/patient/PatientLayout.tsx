@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Calendar, Stethoscope, FileText, Clock, CalendarDays, Settings, LogOut, Moon, Sun, User } from 'lucide-react';
-import speedmedLogo from '@/assets/speedmed-logo.png';
+import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
 import { mockPatientUser } from '@/data/mockData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
@@ -8,11 +8,11 @@ import { useUser } from '@/contexts/UserContext';
 
 const menuItems = [
   { icon: Home, label: 'Início', path: '/patient' },
+  { icon: Calendar, label: 'Agendamento', path: '/patient/appointments' },
   { icon: Stethoscope, label: 'Tratamentos', path: '/patient/treatments' },
   { icon: FileText, label: 'Arquivos', path: '/patient/files' },
   { icon: CalendarDays, label: 'Histórico', path: '/patient/history' },
   { icon: Clock, label: 'Horários', path: '/patient/schedule' },
-  { icon: Calendar, label: 'Agendamento', path: '/patient/appointments' },
   { icon: Settings, label: 'Configurações', path: '/patient/settings' },
 ];
 
@@ -80,9 +80,19 @@ const PatientLayout = () => {
         {menuItems.slice(0, 4).map(item => {
           const isActive = location.pathname === item.path;
           return (
-            <button key={item.path} onClick={() => navigate(item.path)} className="flex flex-col items-center gap-0.5 p-1">
+            <button key={item.path} onClick={() => navigate(item.path)} className="flex flex-col items-center gap-0.5 p-1 relative">
               <item.icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
               <span className={`text-[10px] ${isActive ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{item.label}</span>
+              {item.path === '/patient/appointments' && patientUnreadCount > 0 && (
+                <span className="absolute top-0 right-0 bg-primary text-primary-foreground text-[8px] rounded-full w-3 h-3 flex items-center justify-center translate-x-1 -translate-y-1">
+                  {patientUnreadCount}
+                </span>
+              )}
+              {item.path === '/patient/files' && patientFilesUnreadCount > 0 && (
+                <span className="absolute top-0 right-0 bg-primary text-primary-foreground text-[8px] rounded-full w-3 h-3 flex items-center justify-center translate-x-1 -translate-y-1">
+                  {patientFilesUnreadCount}
+                </span>
+              )}
             </button>
           );
         })}

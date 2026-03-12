@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useUser, UserRole } from '@/contexts/UserContext';
-import speedmedLogo from '@/assets/speedmed-logo.png';
+import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
 import loginBg from '@/assets/login-bg.jpg';
 
 const Login = () => {
