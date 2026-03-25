@@ -59,7 +59,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setDoctors(prev => [...prev, newDoc]);
         toast.success('Médico cadastrado com sucesso!');
         if (doctorData.email) {
-            toast.info(`Credenciais de acesso enviadas para ${doctorData.email}. Senha temporária: 123456`, { duration: 6000 });
+            toast.info(`Credenciais enviadas para ${doctorData.email}. Senha configurada: ${doctorData.password || 'não informada'}`, { duration: 6000 });
         }
     }, []);
 

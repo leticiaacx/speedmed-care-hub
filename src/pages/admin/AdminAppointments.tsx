@@ -6,17 +6,20 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const AdminAppointments = () => {
-    const { appointments, updateAppointmentStatus } = useAppointments();
-    const { doctors } = useUser();
+    const { appointments, updateAppointmentStatus, addAppointment } = useAppointments();
+    const { doctors, patients } = useUser();
     const [filterDoctor, setFilterDoctor] = useState<string>('all');
     const [filterStatus, setFilterStatus] = useState<string>('all');
 
     const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
     const [denyingApptId, setDenyingApptId] = useState<string | null>(null);
     const [denyMessage, setDenyMessage] = useState('');
+    const [showNewAppt, setShowNewAppt] = useState(false);
+    const [newAppt, setNewAppt] = useState({ patientId: '', doctorId: '', date: '', time: '', type: 'Consulta', reason: '' });
 
     const filteredAppointments = useMemo(() => {
         return appointments.filter(a => {
@@ -48,6 +51,27 @@ const AdminAppointments = () => {
         }
     };
 
+    const handleCreateAppt = () => {
+        const patient = patients.find(p => p.id === newAppt.patientId);
+        const doctor = doctors.find(d => d.id === newAppt.doctorId);
+        if (!patient || !doctor || !newAppt.date || !newAppt.time) return;
+        
+        addAppointment({
+            patientId: patient.id,
+            patientName: patient.name,
+            doctorId: doctor.id,
+            doctorName: doctor.name,
+            date: newAppt.date,
+            time: newAppt.time,
+            type: newAppt.type,
+            status: 'confirmado',
+            location: 'Clínica SpeedMed - Unidade Centro',
+            reason: newAppt.reason || 'Consulta médica',
+        });
+        setShowNewAppt(false);
+        setNewAppt({ patientId: '', doctorId: '', date: '', time: '', type: 'Consulta', reason: '' });
+    };
+
     const selectedAppt = selectedApptId ? appointments.find(a => a.id === selectedApptId) : null;
 
     return (
@@ -58,6 +82,9 @@ const AdminAppointments = () => {
                     <p className="text-muted-foreground mt-1">Visão geral da clínica e controle de filas</p>
                 </div>
                 <div className="flex gap-3">
+                    <Button onClick={() => setShowNewAppt(true)} className="gap-2">
+                        <Plus className="w-4 h-4" /> Novo Agendamento
+                    </Button>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
                         <SelectTrigger className="w-[160px] bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
                         <SelectContent>
@@ -84,6 +111,7 @@ const AdminAppointments = () => {
                                 <tr>
                                     <th className="px-6 py-4 font-semibold">Data / Hora</th>
                                     <th className="px-6 py-4 font-semibold">Paciente</th>
+                                    <th className="px-6 py-4 font-semibold">Médico</th>
                                     <th className="px-6 py-4 font-semibold">Status</th>
                                     <th className="px-6 py-4 font-semibold text-right">Ação</th>
                                 </tr>
@@ -99,6 +127,7 @@ const AdminAppointments = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 font-medium text-foreground">{appt.patientName}</td>
+                                        <td className="px-6 py-4 text-muted-foreground">{appt.doctorName || 'Não definido'}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusColors[appt.status]}`}>
                                                 {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
@@ -130,6 +159,10 @@ const AdminAppointments = () => {
                                     <div>
                                         <p className="text-sm text-muted-foreground">Paciente</p>
                                         <p className="font-semibold text-lg text-foreground">{selectedAppt.patientName}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground text-right">Médico</p>
+                                        <p className="font-medium text-foreground text-right">{selectedAppt.doctorName || 'Não definido'}</p>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 pt-2">
@@ -206,6 +239,60 @@ const AdminAppointments = () => {
                                 Recusar e Notificar
                             </Button>
                         </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* New Appointment Modal */}
+            <Dialog open={showNewAppt} onOpenChange={setShowNewAppt}>
+                <DialogContent>
+                    <DialogHeader><DialogTitle>Novo Agendamento</DialogTitle></DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium">Paciente</label>
+                            <Select value={newAppt.patientId} onValueChange={v => setNewAppt(p => ({ ...p, patientId: v }))}>
+                                <SelectTrigger><SelectValue placeholder="Selecione o paciente" /></SelectTrigger>
+                                <SelectContent>
+                                    {patients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium">Médico</label>
+                            <Select value={newAppt.doctorId} onValueChange={v => setNewAppt(p => ({ ...p, doctorId: v }))}>
+                                <SelectTrigger><SelectValue placeholder="Selecione o médico" /></SelectTrigger>
+                                <SelectContent>
+                                    {doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name} ({d.specialty})</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Data</label>
+                                <Input type="date" value={newAppt.date} onChange={e => setNewAppt(p => ({ ...p, date: e.target.value }))} />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Hora</label>
+                                <Input type="time" value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))} />
+                            </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Nota: Confirme a aba de horários do médico antes de agendar para garantir que ele atende no dia da semana selecionado.</p>
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium">Tipo</label>
+                            <Select value={newAppt.type} onValueChange={v => setNewAppt(p => ({ ...p, type: v }))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Consulta">Consulta</SelectItem>
+                                    <SelectItem value="Retorno">Retorno</SelectItem>
+                                    <SelectItem value="Exame">Exame</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium">Motivo</label>
+                            <Input value={newAppt.reason} onChange={e => setNewAppt(p => ({ ...p, reason: e.target.value }))} placeholder="Ex: Checkup de rotina" />
+                        </div>
+                        <Button onClick={handleCreateAppt} className="w-full mt-2">Salvar Agendamento</Button>
                     </div>
                 </DialogContent>
             </Dialog>

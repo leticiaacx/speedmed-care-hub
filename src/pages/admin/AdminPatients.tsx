@@ -19,6 +19,14 @@ const AdminPatients = () => {
     const [newPhone, setNewPhone] = useState('');
     const [newAge, setNewAge] = useState('');
     const [newDoctorId, setNewDoctorId] = useState('');
+    const [newSocialName, setNewSocialName] = useState('');
+    const [newBloodType, setNewBloodType] = useState('');
+    const [newMaritalStatus, setNewMaritalStatus] = useState('');
+    const [newSexuality, setNewSexuality] = useState('');
+    const [newReligion, setNewReligion] = useState('');
+    const [newOrganDonor, setNewOrganDonor] = useState('Não');
+    const [newAddress, setNewAddress] = useState('');
+    const [newRequiresCompanion, setNewRequiresCompanion] = useState('Não');
 
     const handleRegister = () => {
         if (!newName || !newEmail || !newCpf || !newDoctorId || !newAge) return;
@@ -28,10 +36,18 @@ const AdminPatients = () => {
             cpf: newCpf,
             phone: newPhone,
             age: Number(newAge),
-            bloodType: 'Não informado',
-            doctorId: newDoctorId
+            bloodType: newBloodType || 'Não informado',
+            doctorId: newDoctorId,
+            socialName: newSocialName,
+            maritalStatus: newMaritalStatus,
+            sexuality: newSexuality,
+            religion: newReligion,
+            organDonor: newOrganDonor === 'Sim',
+            address: newAddress,
+            requiresCompanion: newRequiresCompanion === 'Sim'
         });
         setNewName(''); setNewEmail(''); setNewCpf(''); setNewPhone(''); setNewAge(''); setNewDoctorId('');
+        setNewSocialName(''); setNewBloodType(''); setNewMaritalStatus(''); setNewSexuality(''); setNewReligion(''); setNewOrganDonor('Não'); setNewAddress(''); setNewRequiresCompanion('Não');
         setShowAddModal(false);
     };
 
@@ -106,10 +122,16 @@ const AdminPatients = () => {
             <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
                 <DialogContent>
                     <DialogHeader><DialogTitle>Cadastrar Novo Paciente</DialogTitle></DialogHeader>
-                    <div className="space-y-4">
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-medium">Nome Completo</label>
-                            <Input placeholder="Nome do paciente..." value={newName} onChange={e => setNewName(e.target.value)} />
+                    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Nome Completo</label>
+                                <Input placeholder="Nome do paciente..." value={newName} onChange={e => setNewName(e.target.value)} />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Nome Social</label>
+                                <Input placeholder="Opcional" value={newSocialName} onChange={e => setNewSocialName(e.target.value)} />
+                            </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
@@ -141,6 +163,70 @@ const AdminPatients = () => {
                                     {doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        {/* Extra info section */}
+                        <div className="border-t pt-4 mt-2">
+                            <h3 className="font-semibold text-sm mb-3">Informações Adicionais</h3>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Endereço</label>
+                                    <Input placeholder="Rua, número..." value={newAddress} onChange={e => setNewAddress(e.target.value)} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Tipo Sanguíneo</label>
+                                    <Select value={newBloodType} onValueChange={setNewBloodType}>
+                                        <SelectTrigger><SelectValue placeholder="Ex: O+" /></SelectTrigger>
+                                        <SelectContent>
+                                            {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Estado Civil</label>
+                                    <Select value={newMaritalStatus} onValueChange={setNewMaritalStatus}>
+                                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Solteiro(a)">Solteiro(a)</SelectItem>
+                                            <SelectItem value="Casado(a)">Casado(a)</SelectItem>
+                                            <SelectItem value="Divorciado(a)">Divorciado(a)</SelectItem>
+                                            <SelectItem value="Viúvo(a)">Viúvo(a)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Sexualidade</label>
+                                    <Input placeholder="Ex: Heterossexual" value={newSexuality} onChange={e => setNewSexuality(e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Religião</label>
+                                    <Input placeholder="Ex: Católica, Evangélica..." value={newReligion} onChange={e => setNewReligion(e.target.value)} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium">Doador de Órgãos?</label>
+                                    <Select value={newOrganDonor} onValueChange={setNewOrganDonor}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Sim">Sim</SelectItem>
+                                            <SelectItem value="Não">Não</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Necessita de acompanhante?</label>
+                                <Select value={newRequiresCompanion} onValueChange={setNewRequiresCompanion}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Sim">Sim</SelectItem>
+                                        <SelectItem value="Não">Não</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <Button onClick={handleRegister} className="w-full mt-2">Cadastrar Paciente</Button>
                     </div>

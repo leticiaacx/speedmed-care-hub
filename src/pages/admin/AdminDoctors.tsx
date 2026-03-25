@@ -13,6 +13,7 @@ const AdminDoctors = () => {
     const [newDocCRM, setNewDocCRM] = useState('');
     const [newDocSpecialty, setNewDocSpecialty] = useState('');
     const [newDocEmail, setNewDocEmail] = useState('');
+    const [newDocPassword, setNewDocPassword] = useState('');
 
     // Temporarily hold schedule changes before saving
     const [editingSchedule, setEditingSchedule] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>([]);
@@ -24,12 +25,14 @@ const AdminDoctors = () => {
             crm: newDocCRM,
             specialty: newDocSpecialty,
             email: newDocEmail,
+            password: newDocPassword,
             schedule: []
         });
         setNewDocName('');
         setNewDocCRM('');
         setNewDocSpecialty('');
         setNewDocEmail('');
+        setNewDocPassword('');
         setShowAddModal(false);
     };
 
@@ -106,9 +109,15 @@ const AdminDoctors = () => {
                             <label className="text-sm font-medium">Nome Completo</label>
                             <Input placeholder="Dra. Leticia..." value={newDocName} onChange={e => setNewDocName(e.target.value)} />
                         </div>
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-medium">E-mail Institucional</label>
-                            <Input type="email" placeholder="medico@speedmed.com" value={newDocEmail} onChange={e => setNewDocEmail(e.target.value)} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">E-mail Institucional</label>
+                                <Input type="email" placeholder="medico@speedmed.com" value={newDocEmail} onChange={e => setNewDocEmail(e.target.value)} />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium">Senha</label>
+                                <Input type="password" placeholder="Senha provisória" value={newDocPassword} onChange={e => setNewDocPassword(e.target.value)} />
+                            </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">

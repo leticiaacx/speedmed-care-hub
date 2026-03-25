@@ -29,12 +29,21 @@ export interface Patient {
     type: string;
   };
   doctorId?: string;
+  socialName?: string;
+  religion?: string;
+  organDonor?: boolean;
+  sexuality?: string;
+  address?: string;
+  requiresCompanion?: boolean;
+  maritalStatus?: string;
 }
 
 export interface Appointment {
   id: string;
   patientId: string;
   patientName: string;
+  doctorId?: string;
+  doctorName?: string;
   date: string;
   time: string;
   type: string;
@@ -48,6 +57,7 @@ export interface Doctor {
   name: string;
   specialty: string;
   crm: string;
+  password?: string;
   schedule: {
     dayOfWeek: number; // 0 = Sun, 1 = Mon, etc.
     startTime: string; // '08:00'
@@ -240,6 +250,8 @@ export const mockAppointments: Appointment[] = [
     id: '2',
     patientId: '2',
     patientName: 'João Oliveira',
+    doctorId: 'd1',
+    doctorName: 'Dr. José da Silva Pereira',
     date: '2026-03-12',
     time: '11:00',
     type: 'Consulta',
@@ -251,6 +263,8 @@ export const mockAppointments: Appointment[] = [
     id: '3',
     patientId: '3',
     patientName: 'Ana Costa',
+    doctorId: 'd2',
+    doctorName: 'Dra. Ana Costa Lima',
     date: '2026-03-15',
     time: '15:00',
     type: 'Retorno',
@@ -262,6 +276,8 @@ export const mockAppointments: Appointment[] = [
     id: '4',
     patientId: '5',
     patientName: 'Fernanda Lima',
+    doctorId: 'd1',
+    doctorName: 'Dr. José da Silva Pereira',
     date: '2026-03-20',
     time: '14:00',
     type: 'Exame',
@@ -284,6 +300,8 @@ export const mockAppointments: Appointment[] = [
     id: '6',
     patientId: '4',
     patientName: 'Carlos Mendes',
+    doctorId: 'd2',
+    doctorName: 'Dra. Ana Costa Lima',
     date: '2026-03-05',
     time: '08:30',
     type: 'Consulta',

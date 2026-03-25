@@ -181,6 +181,65 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
                 <div className="flex items-center gap-2 font-medium"><Droplets className="w-4 h-4 text-destructive" /> {editedPatient.bloodType}</div>
               )}
             </div>
+            <div>
+              <label className="text-sm text-muted-foreground block mb-1">Endereço</label>
+              {isEditing ? (
+                <Input value={editedPatient.address || ''} onChange={e => setEditedPatient({ ...editedPatient, address: e.target.value })} />
+              ) : (
+                <div className="flex items-center gap-2 font-medium">{editedPatient.address || 'Não informado'}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground block mb-1">Nome Social</label>
+              {isEditing ? (
+                <Input value={editedPatient.socialName || ''} onChange={e => setEditedPatient({ ...editedPatient, socialName: e.target.value })} />
+              ) : (
+                <div className="flex items-center gap-2 font-medium">{editedPatient.socialName || 'Não informado'}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground block mb-1">Estado Civil / Sexualidade</label>
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Input value={editedPatient.maritalStatus || ''} onChange={e => setEditedPatient({ ...editedPatient, maritalStatus: e.target.value })} placeholder="Estado civil" />
+                  <Input value={editedPatient.sexuality || ''} onChange={e => setEditedPatient({ ...editedPatient, sexuality: e.target.value })} placeholder="Sexualidade" />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 font-medium">
+                  {editedPatient.maritalStatus || 'Não informado'} • {editedPatient.sexuality || 'Não informado'}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-sm text-muted-foreground block mb-1">Religião</label>
+              {isEditing ? (
+                <Input value={editedPatient.religion || ''} onChange={e => setEditedPatient({ ...editedPatient, religion: e.target.value })} />
+              ) : (
+                <div className="flex items-center gap-2 font-medium">{editedPatient.religion || 'Não informado'}</div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-sm text-muted-foreground block mb-1">Doador(a)?</label>
+                {isEditing ? (
+                  <Input value={editedPatient.organDonor ? 'Sim' : 'Não'} onChange={e => setEditedPatient({ ...editedPatient, organDonor: e.target.value.toLowerCase() === 'sim' })} />
+                ) : (
+                  <div className="font-medium text-sm">{editedPatient.organDonor ? 'Sim' : 'Não'}</div>
+                )}
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground block mb-1">Acompanhante?</label>
+                {isEditing ? (
+                  <Input value={editedPatient.requiresCompanion ? 'Sim' : 'Não'} onChange={e => setEditedPatient({ ...editedPatient, requiresCompanion: e.target.value.toLowerCase() === 'sim' })} />
+                ) : (
+                  <div className="font-medium text-sm">{editedPatient.requiresCompanion ? 'Sim' : 'Não'}</div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
