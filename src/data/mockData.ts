@@ -1,21 +1,24 @@
-export interface Patient {
-  id: string;
-  name: string;
-  age: number;
-  phone: string;
-  email: string;
+export interface USUARIO {
+  id: number;
+  nome: string;
   cpf: string;
-  bloodType: string;
-  allergies: string[];
-  medications: string[];
-  lastConsultation: {
+  email: string;
+  senha?: string;
+  
+  // UI Fields mapping
+  age?: number;
+  phone?: string;
+  bloodType?: string;
+  allergies?: string[];
+  medications?: string[];
+  lastConsultation?: {
     date: string;
     time: string;
     location: string;
     reason: string;
   };
-  heredity: string[];
-  consultationHistory: {
+  heredity?: string[];
+  consultationHistory?: {
     date: string;
     time: string;
     type: string;
@@ -28,7 +31,7 @@ export interface Patient {
     time: string;
     type: string;
   };
-  doctorId?: string;
+  medico_id?: number;
   socialName?: string;
   religion?: string;
   organDonor?: boolean;
@@ -38,49 +41,70 @@ export interface Patient {
   maritalStatus?: string;
 }
 
-export interface Appointment {
-  id: string;
-  patientId: string;
-  patientName: string;
-  doctorId?: string;
+export interface AGENDAMENTO {
+  id: number;
+  usuario_id: number;
+  medico_id: number;
+  clinica_id: number;
+  data_hora: string;
+  status: string;
+
+  // UI mapping
+  patientName?: string;
   doctorName?: string;
-  date: string;
-  time: string;
-  type: string;
-  status: 'confirmado' | 'pendente' | 'cancelado' | 'realizado';
-  location: string;
-  reason: string;
+  type?: string;
+  location?: string;
+  reason?: string;
 }
 
-export interface Doctor {
-  id: string;
-  name: string;
-  specialty: string;
+export interface MEDICO {
+  id: number;
+  nome: string;
   crm: string;
-  password?: string;
-  schedule: {
-    dayOfWeek: number; // 0 = Sun, 1 = Mon, etc.
-    startTime: string; // '08:00'
-    endTime: string;   // '18:00'
+  especialidade: string;
+  clinica_id: number;
+  email: string;
+
+  // UI mapping
+  senha?: string;
+  schedule?: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
   }[];
-  email?: string;
   phone?: string;
   location?: string;
   onlineConsultation?: boolean;
 }
 
-export interface Admin {
-  id: string;
-  name: string;
-  clinicName: string;
+export interface CLINICA {
+  id: number;
+  nome: string;
+  endereco_id: number;
+  horario_funcionamento: string;
+  
+  // UI mapping
   email: string;
 }
 
-export const mockDoctor: Doctor = {
-  id: 'd1',
-  name: 'Dr. José da Silva Pereira',
-  specialty: 'Clínico Geral',
+export interface ENDERECO {
+  id: number;
+  usuario_id: number | null;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+  is_principal: boolean;
+}
+
+export const mockDoctor: MEDICO = {
+  id: 1,
+  nome: 'Dr. José da Silva Pereira',
+  especialidade: 'Clínico Geral',
   crm: 'CRM/SP 123456',
+  clinica_id: 1,
   schedule: [
     { dayOfWeek: 1, startTime: '08:00', endTime: '18:00' },
     { dayOfWeek: 2, startTime: '08:00', endTime: '18:00' },
@@ -91,13 +115,14 @@ export const mockDoctor: Doctor = {
   email: 'medico@speedmed.com',
 };
 
-export const mockDoctors: Doctor[] = [
+export const mockDoctors: MEDICO[] = [
   mockDoctor,
   {
-    id: 'd2',
-    name: 'Dra. Ana Costa Lima',
-    specialty: 'Cardiologia',
+    id: 2,
+    nome: 'Dra. Ana Costa Lima',
+    especialidade: 'Cardiologia',
     crm: 'CRM/SP 654321',
+    clinica_id: 1,
     schedule: [
       { dayOfWeek: 2, startTime: '09:00', endTime: '16:00' },
       { dayOfWeek: 4, startTime: '09:00', endTime: '16:00' },
@@ -106,19 +131,20 @@ export const mockDoctors: Doctor[] = [
   }
 ];
 
-export const mockAdmins: Admin[] = [
+export const mockAdmins: CLINICA[] = [
   {
-    id: 'a1',
-    name: 'Admin Hospitalar',
-    clinicName: 'Clínica SpeedMed',
+    id: 1,
+    nome: 'Admin Hospitalar',
+    endereco_id: 1,
+    horario_funcionamento: '08:00 - 18:00',
     email: 'admin@speedmed.com'
   }
 ];
 
-export const mockPatients: Patient[] = [
+export const mockPatients: USUARIO[] = [
   {
-    id: '1',
-    name: 'Maria Santos',
+    id: 1,
+    nome: 'Maria Santos',
     age: 45,
     phone: '(11) 98765-4321',
     email: 'maria@email.com',
@@ -138,11 +164,11 @@ export const mockPatients: Patient[] = [
       { date: '2025-10-15', time: '09:30', type: 'Retorno', specialty: 'Clínico Geral', doctorName: 'Dra. Ana', diagnosis: 'Rotina normal' },
     ],
     nextAppointment: { date: '2026-03-10', time: '09:00', type: 'Retorno' },
-    doctorId: 'd1',
+    medico_id: 1,
   },
   {
-    id: '2',
-    name: 'João Oliveira',
+    id: 2,
+    nome: 'João Oliveira',
     age: 32,
     phone: '(11) 91234-5678',
     email: 'joao@email.com',
@@ -161,11 +187,11 @@ export const mockPatients: Patient[] = [
       { date: '2026-02-15', time: '10:30', type: 'Consulta', specialty: 'Gastroenterologia', doctorName: 'Dr. Silva', diagnosis: 'Gastrite aguda' },
     ],
     nextAppointment: { date: '2026-03-12', time: '11:00', type: 'Consulta' },
-    doctorId: 'd1',
+    medico_id: 1,
   },
   {
-    id: '3',
-    name: 'Ana Costa',
+    id: 3,
+    nome: 'Ana Costa',
     age: 58,
     phone: '(11) 99876-5432',
     email: 'ana@email.com',
@@ -185,11 +211,11 @@ export const mockPatients: Patient[] = [
       { date: '2026-01-10', time: '14:00', type: 'Consulta', specialty: 'Cardiologia', doctorName: 'Dra. Lima', diagnosis: 'Ajuste de dosagem' },
     ],
     nextAppointment: { date: '2026-03-15', time: '15:00', type: 'Retorno' },
-    doctorId: 'd1',
+    medico_id: 1,
   },
   {
-    id: '4',
-    name: 'Carlos Mendes',
+    id: 4,
+    nome: 'Carlos Mendes',
     age: 67,
     phone: '(11) 92345-6789',
     email: 'carlos@email.com',
@@ -207,11 +233,11 @@ export const mockPatients: Patient[] = [
     consultationHistory: [
       { date: '2026-03-01', time: '08:00', type: 'Consulta', specialty: 'Endocrinologia', doctorName: 'Dr. Costa', diagnosis: 'Diabetes Tipo 2' },
     ],
-    doctorId: 'd2',
+    medico_id: 2,
   },
   {
-    id: '5',
-    name: 'Fernanda Lima',
+    id: 5,
+    nome: 'Fernanda Lima',
     age: 28,
     phone: '(11) 93456-7890',
     email: 'fernanda@email.com',
@@ -230,90 +256,92 @@ export const mockPatients: Patient[] = [
       { date: '2026-02-10', time: '13:00', type: 'Consulta', specialty: 'Clínico Geral', doctorName: 'Dra. Souza', diagnosis: 'Exames normais' },
     ],
     nextAppointment: { date: '2026-03-20', time: '14:00', type: 'Exame' },
-    doctorId: 'd1',
+    medico_id: 1,
   },
 ];
 
-export const mockAppointments: Appointment[] = [
+export const mockAppointments: AGENDAMENTO[] = [
   {
-    id: '1',
-    patientId: '1',
+    id: 1,
+    usuario_id: 1,
     patientName: 'Maria Santos',
-    date: '2026-03-10',
-    time: '09:00',
+    data_hora: '2026-03-10T09:00',
     type: 'Retorno',
     status: 'confirmado',
     location: 'Clínica SpeedMed - Unidade Centro',
     reason: 'Acompanhamento dores de cabeça',
+    clinica_id: 1,
+    medico_id: 1,
   },
   {
-    id: '2',
-    patientId: '2',
+    id: 2,
+    usuario_id: 2,
     patientName: 'João Oliveira',
-    doctorId: 'd1',
+    medico_id: 1,
     doctorName: 'Dr. José da Silva Pereira',
-    date: '2026-03-12',
-    time: '11:00',
+    data_hora: '2026-03-12T11:00',
     type: 'Consulta',
     status: 'pendente',
     location: 'Clínica SpeedMed - Unidade Sul',
     reason: 'Retorno dor abdominal',
+    clinica_id: 1,
   },
   {
-    id: '3',
-    patientId: '3',
+    id: 3,
+    usuario_id: 3,
     patientName: 'Ana Costa',
-    doctorId: 'd2',
+    medico_id: 2,
     doctorName: 'Dra. Ana Costa Lima',
-    date: '2026-03-15',
-    time: '15:00',
+    data_hora: '2026-03-15T15:00',
     type: 'Retorno',
     status: 'confirmado',
     location: 'Clínica SpeedMed - Unidade Centro',
     reason: 'Controle pressão arterial',
+    clinica_id: 1,
   },
   {
-    id: '4',
-    patientId: '5',
+    id: 4,
+    usuario_id: 5,
     patientName: 'Fernanda Lima',
-    doctorId: 'd1',
+    medico_id: 1,
     doctorName: 'Dr. José da Silva Pereira',
-    date: '2026-03-20',
-    time: '14:00',
+    data_hora: '2026-03-20T14:00',
     type: 'Exame',
     status: 'pendente',
     location: 'Clínica SpeedMed - Unidade Centro',
     reason: 'Exames de rotina',
+    clinica_id: 1,
   },
   {
-    id: '5',
-    patientId: '1',
+    id: 5,
+    usuario_id: 1,
     patientName: 'Maria Santos',
-    date: '2026-04-05',
-    time: '10:00',
+    data_hora: '2026-04-05T10:00',
     type: 'Retorno',
     status: 'pendente',
     location: 'Clínica SpeedMed - Unidade Centro',
     reason: 'Avaliação tratamento',
+    medico_id: 1,
+    clinica_id: 1,
   },
   {
-    id: '6',
-    patientId: '4',
+    id: 6,
+    usuario_id: 4,
     patientName: 'Carlos Mendes',
-    doctorId: 'd2',
+    medico_id: 2,
     doctorName: 'Dra. Ana Costa Lima',
-    date: '2026-03-05',
-    time: '08:30',
+    data_hora: '2026-03-05T08:30',
     type: 'Consulta',
     status: 'realizado',
     location: 'Clínica SpeedMed - Unidade Norte',
     reason: 'Acompanhamento diabetes',
+    clinica_id: 1,
   },
 ];
 
 export const mockPatientUser = {
-  id: '1',
-  name: 'José Silva',
+  id: 1,
+  nome: 'José Silva',
   age: 35,
   phone: '(11) 97654-3210',
   email: 'jose@email.com',

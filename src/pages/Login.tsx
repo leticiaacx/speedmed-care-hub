@@ -25,7 +25,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
       <div className="hidden lg:block lg:w-1/2 relative">
-        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1200&q=80" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src="/bg-login.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'hsl(199 89% 48% / 0.15)' }} />
       </div>
 

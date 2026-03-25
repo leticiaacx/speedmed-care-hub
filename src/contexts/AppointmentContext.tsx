@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { mockAppointments, Appointment } from '@/data/mockData';
+import { mockAppointments, AGENDAMENTO } from '@/data/mockData';
 import { toast } from 'sonner';
 
 interface Notification {
@@ -21,7 +21,7 @@ export interface PatientFile {
 
 export interface DoctorReport {
   id: string;
-  patientId: string;
+  patientId: number;
   patientName: string;
   date: string;
   content: string;
@@ -29,12 +29,12 @@ export interface DoctorReport {
 }
 
 interface AppointmentContextType {
-  appointments: Appointment[];
+  appointments: AGENDAMENTO[];
   notifications: Notification[];
   patientFiles: PatientFile[];
   doctorReports: DoctorReport[];
-  addAppointment: (appt: Omit<Appointment, 'id'>) => { success: boolean; error?: string };
-  updateAppointmentStatus: (id: string, status: Appointment['status'], reason?: string) => void;
+  addAppointment: (appt: Omit<AGENDAMENTO, 'id'>) => { success: boolean; error?: string };
+  updateAppointmentStatus: (id: number, status: string, reason?: string) => void;
   markNotificationRead: (id: string) => void;
   clearPatientNotifications: () => void;
   clearPatientFileNotifications: () => void;
@@ -50,7 +50,7 @@ interface AppointmentContextType {
 const AppointmentContext = createContext<AppointmentContextType | undefined>(undefined);
 
 export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [appointments, setAppointments] = useState<AGENDAMENTO[]>(mockAppointments);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [patientFiles, setPatientFiles] = useState<PatientFile[]>([
     { id: 'f1', name: 'Resultado Hemograma Completo', type: 'PDF', date: '20/02/2026', size: '245 KB' },
@@ -59,22 +59,20 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   ]);
   const [doctorReports, setDoctorReports] = useState<DoctorReport[]>([]);
 
-  const addAppointment = useCallback((appt: Omit<Appointment, 'id'>) => {
-    // Advanced logic: Prevent double booking for the same date, time and doctor (using location/doctorName as proxy since we didn't add doctorId to appointments initially, but ideally we should).
-    // Let's assume for this mock we check date and time across the board, or specific to the patient.
-    const isConflict = appointments.some(a => a.date === appt.date && a.time === appt.time && a.status !== 'cancelado');
+  const addAppointment = useCallback((appt: Omit<AGENDAMENTO, 'id'>) => {
+    const isConflict = appointments.some(a => a.data_hora === appt.data_hora && a.medico_id === appt.medico_id && a.status !== 'cancelado');
 
     if (isConflict) {
       toast.error('Este horário já está ocupado por outra consulta.');
       return { success: false, error: 'Horário indisponível' };
     }
 
-    const newAppt: Appointment = { ...appt, id: `appt-${Date.now()}` };
+    const newAppt: AGENDAMENTO = { ...appt, id: Date.now() };
     setAppointments(prev => [...prev, newAppt]);
     setNotifications(prev => [
       {
         id: `notif-${Date.now()}`,
-        message: `Novo agendamento: ${appt.patientName} em ${appt.date} às ${appt.time}`,
+        message: `Novo agendamento: ${appt.patientName} em ${appt.data_hora}`,
         time: new Date(),
         read: false,
         type: 'new_appointment',
@@ -85,7 +83,7 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
     return { success: true };
   }, [appointments]);
 
-  const updateAppointmentStatus = useCallback((id: string, status: Appointment['status'], reason?: string) => {
+  const updateAppointmentStatus = useCallback((id: number, status: string, reason?: string) => {
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     const appt = appointments.find(a => a.id === id);
     if (appt) {

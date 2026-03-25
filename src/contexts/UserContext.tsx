@@ -1,31 +1,31 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { mockDoctors, mockPatients, mockAdmins, Doctor, Patient, Admin } from '@/data/mockData';
+import { mockDoctors, mockPatients, mockAdmins, MEDICO, USUARIO, CLINICA } from '@/data/mockData';
 import { toast } from 'sonner';
 
-export type { Doctor, Patient, Admin };
+export type { MEDICO, USUARIO, CLINICA };
 export type UserRole = 'admin' | 'doctor' | 'patient';
 
 interface UserContextType {
     currentUser: any;
     userRole: UserRole | null;
-    doctors: Doctor[];
-    patients: Patient[];
-    admins: Admin[];
+    doctors: MEDICO[];
+    patients: USUARIO[];
+    admins: CLINICA[];
     login: (email: string, password?: string) => { success: boolean; role?: UserRole };
     logout: () => void;
-    registerDoctor: (doctor: Omit<Doctor, 'id'>) => void;
-    registerPatient: (patient: Omit<Patient, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'> & { doctorId: string }) => void;
-    updateDoctorSchedule: (doctorId: string, schedule: Doctor['schedule']) => void;
+    registerDoctor: (doctor: Omit<MEDICO, 'id'>) => void;
+    registerPatient: (patient: Omit<USUARIO, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'>) => void;
+    updateDoctorSchedule: (doctorId: number, schedule: MEDICO['schedule']) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-    const [doctors, setDoctors] = useState<Doctor[]>(mockDoctors);
-    const [patients, setPatients] = useState<Patient[]>(mockPatients);
-    const [admins, setAdmins] = useState<Admin[]>(mockAdmins);
+    const [doctors, setDoctors] = useState<MEDICO[]>(mockDoctors);
+    const [patients, setPatients] = useState<USUARIO[]>(mockPatients);
+    const [admins, setAdmins] = useState<CLINICA[]>(mockAdmins);
     const [userRole, setUserRole] = useState<UserRole | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
     const getCurrentUser = () => {
         if (!userRole || !currentUserId) return null;
@@ -54,19 +54,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setCurrentUserId(null);
     }, []);
 
-    const registerDoctor = useCallback((doctorData: Omit<Doctor, 'id'>) => {
-        const newDoc: Doctor = { ...doctorData, id: `d${Date.now()}` };
+    const registerDoctor = useCallback((doctorData: Omit<MEDICO, 'id'>) => {
+        const newDoc: MEDICO = { ...doctorData, id: Date.now() };
         setDoctors(prev => [...prev, newDoc]);
         toast.success('Médico cadastrado com sucesso!');
         if (doctorData.email) {
-            toast.info(`Credenciais enviadas para ${doctorData.email}. Senha configurada: ${doctorData.password || 'não informada'}`, { duration: 6000 });
+            toast.info(`Credenciais enviadas para ${doctorData.email}. Senha configurada: ${doctorData.senha || 'não informada'}`, { duration: 6000 });
         }
     }, []);
 
-    const registerPatient = useCallback((patientData: Omit<Patient, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'> & { doctorId: string }) => {
-        const newPatient: Patient = {
+    const registerPatient = useCallback((patientData: Omit<USUARIO, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'>) => {
+        const newPatient: USUARIO = {
             ...patientData,
-            id: `p${Date.now()}`,
+            id: Date.now(),
             consultationHistory: [],
             allergies: [],
             medications: [],
@@ -77,7 +77,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         toast.success('Paciente cadastrado com sucesso!');
     }, []);
 
-    const updateDoctorSchedule = useCallback((doctorId: string, schedule: Doctor['schedule']) => {
+    const updateDoctorSchedule = useCallback((doctorId: number, schedule: MEDICO['schedule']) => {
         setDoctors(prev => prev.map(d => d.id === doctorId ? { ...d, schedule } : d));
         toast.success('Agenda médica atualizada com sucesso!');
     }, []);
