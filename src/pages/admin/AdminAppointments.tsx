@@ -15,11 +15,11 @@ const AdminAppointments = () => {
     const [filterDoctor, setFilterDoctor] = useState<string>('all');
     const [filterStatus, setFilterStatus] = useState<string>('all');
 
-    const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
-    const [denyingApptId, setDenyingApptId] = useState<string | null>(null);
+    const [selectedApptId, setSelectedApptId] = useState<number | null>(null);
+    const [denyingApptId, setDenyingApptId] = useState<number | null>(null);
     const [denyMessage, setDenyMessage] = useState('');
     const [showNewAppt, setShowNewAppt] = useState(false);
-    const [newAppt, setNewAppt] = useState({ patientId: '', doctorId: '', date: '', time: '', type: 'Consulta', reason: '' });
+    const [newAppt, setNewAppt] = useState({ usuario_id: '', medico_id: '', data_hora: '', reason: '', type: 'Consulta' });
 
     const filteredAppointments = useMemo(() => {
         return appointments.filter(a => {
@@ -32,7 +32,7 @@ const AdminAppointments = () => {
             }
             if (filterStatus !== 'all' && a.status !== filterStatus) return false;
             return true;
-        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }).sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime());
     }, [appointments, filterDoctor, filterStatus]);
 
     const statusColors: Record<string, string> = {
@@ -52,24 +52,24 @@ const AdminAppointments = () => {
     };
 
     const handleCreateAppt = () => {
-        const patient = patients.find(p => p.id === newAppt.patientId);
-        const doctor = doctors.find(d => d.id === newAppt.doctorId);
-        if (!patient || !doctor || !newAppt.date || !newAppt.time) return;
+        const patient = patients.find(p => p.id === Number(newAppt.usuario_id));
+        const doctor = doctors.find(d => d.id === Number(newAppt.medico_id));
+        if (!patient || !doctor || !newAppt.data_hora) return;
         
         addAppointment({
-            patientId: patient.id,
-            patientName: patient.name,
-            doctorId: doctor.id,
-            doctorName: doctor.name,
-            date: newAppt.date,
-            time: newAppt.time,
+            usuario_id: patient.id,
+            patientName: patient.nome,
+            medico_id: doctor.id,
+            doctorName: doctor.nome,
+            data_hora: newAppt.data_hora,
             type: newAppt.type,
             status: 'confirmado',
             location: 'Clínica SpeedMed - Unidade Centro',
             reason: newAppt.reason || 'Consulta médica',
+            clinica_id: 1,
         });
         setShowNewAppt(false);
-        setNewAppt({ patientId: '', doctorId: '', date: '', time: '', type: 'Consulta', reason: '' });
+        setNewAppt({ usuario_id: '', medico_id: '', data_hora: '', type: 'Consulta', reason: '' });
     };
 
     const selectedAppt = selectedApptId ? appointments.find(a => a.id === selectedApptId) : null;
@@ -122,8 +122,8 @@ const AdminAppointments = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2 font-medium text-foreground">
                                                 <Calendar className="w-4 h-4 text-primary" />
-                                                {format(parseISO(appt.date), 'dd/MM/yyyy')}
-                                                <span className="text-muted-foreground font-normal ml-1">às {appt.time}</span>
+                                                {format(parseISO(appt.data_hora.split('T')[0]), 'dd/MM/yyyy')}
+                                                <span className="text-muted-foreground font-normal ml-1">às {appt.data_hora.includes('T') ? appt.data_hora.split('T')[1]?.substring(0, 5) : appt.data_hora}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 font-medium text-foreground">{appt.patientName}</td>
@@ -170,7 +170,7 @@ const AdminAppointments = () => {
                                         <p className="text-sm text-muted-foreground">Data e Hora</p>
                                         <div className="flex items-center gap-1.5 font-medium text-foreground">
                                             <Calendar className="w-4 h-4 text-primary" />
-                                            {format(parseISO(selectedAppt.date), 'dd/MM/yyyy')} às {selectedAppt.time}
+                                            {selectedAppt.data_hora ? format(parseISO(selectedAppt.data_hora.split('T')[0]), 'dd/MM/yyyy') : ''} às {selectedAppt.data_hora?.includes('T') ? selectedAppt.data_hora.split('T')[1].substring(0,5) : ''}
                                         </div>
                                     </div>
                                     <div>
@@ -250,30 +250,26 @@ const AdminAppointments = () => {
                     <div className="space-y-4">
                         <div className="space-y-1.5">
                             <label className="text-sm font-medium">Paciente</label>
-                            <Select value={newAppt.patientId} onValueChange={v => setNewAppt(p => ({ ...p, patientId: v }))}>
+                            <Select value={newAppt.usuario_id} onValueChange={v => setNewAppt(p => ({ ...p, usuario_id: v }))}>
                                 <SelectTrigger><SelectValue placeholder="Selecione o paciente" /></SelectTrigger>
                                 <SelectContent>
-                                    {patients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                                    {patients.map(p => <SelectItem key={p.id} value={p.id.toString()}>{p.nome}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-sm font-medium">Médico</label>
-                            <Select value={newAppt.doctorId} onValueChange={v => setNewAppt(p => ({ ...p, doctorId: v }))}>
+                            <Select value={newAppt.medico_id} onValueChange={v => setNewAppt(p => ({ ...p, medico_id: v }))}>
                                 <SelectTrigger><SelectValue placeholder="Selecione o médico" /></SelectTrigger>
                                 <SelectContent>
-                                    {doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name} ({d.specialty})</SelectItem>)}
+                                    {doctors.map(d => <SelectItem key={d.id} value={d.id.toString()}>{d.nome} ({d.especialidade})</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Data</label>
-                                <Input type="date" value={newAppt.date} onChange={e => setNewAppt(p => ({ ...p, date: e.target.value }))} />
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium">Hora</label>
-                                <Input type="time" value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))} />
+                            <div className="space-y-1.5 col-span-2">
+                                <label className="text-sm font-medium">Data e Hora</label>
+                                <Input type="datetime-local" value={newAppt.data_hora} onChange={e => setNewAppt(p => ({ ...p, data_hora: e.target.value }))} />
                             </div>
                         </div>
                         <p className="text-xs text-muted-foreground">Nota: Confirme a aba de horários do médico antes de agendar para garantir que ele atende no dia da semana selecionado.</p>

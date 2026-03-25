@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useUser, Doctor } from '@/contexts/UserContext';
+import { useUser, MEDICO } from '@/contexts/UserContext';
 import { toast } from 'sonner';
 
 const tabs = [
@@ -20,11 +20,11 @@ const DoctorSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const { theme, toggleTheme } = useTheme();
   const { currentUser, updateDoctorSchedule } = useUser();
-  const doctor = currentUser as Doctor | null;
+  const doctor = currentUser as MEDICO | null;
 
   const [profile, setProfile] = useState({
-    name: doctor?.name || '',
-    specialty: doctor?.specialty || '',
+    nome: doctor?.nome || '',
+    especialidade: doctor?.especialidade || '',
     crm: doctor?.crm || '',
     email: doctor?.email || '',
     phone: doctor?.phone || '',
@@ -43,8 +43,8 @@ const DoctorSettings = () => {
   useEffect(() => {
     if (doctor) {
       setProfile({
-        name: doctor.name,
-        specialty: doctor.specialty,
+        nome: doctor.nome,
+        especialidade: doctor.especialidade,
         crm: doctor.crm,
         email: doctor.email,
         phone: doctor.phone,
@@ -101,8 +101,8 @@ const DoctorSettings = () => {
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-foreground">Editar Perfil</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div><label className="text-sm font-semibold text-foreground mb-1.5 block">Nome Completo</label><Input value={profile.name} onChange={e => setProfile(p => ({ ...p, name: e.target.value }))} /></div>
-              <div><label className="text-sm font-semibold text-foreground mb-1.5 block">Especialidade</label><Input value={profile.specialty} onChange={e => setProfile(p => ({ ...p, specialty: e.target.value }))} /></div>
+              <div><label className="text-sm font-semibold text-foreground mb-1.5 block">Nome Completo</label><Input value={profile.nome} onChange={e => setProfile(p => ({ ...p, nome: e.target.value }))} /></div>
+              <div><label className="text-sm font-semibold text-foreground mb-1.5 block">Especialidade</label><Input value={profile.especialidade} onChange={e => setProfile(p => ({ ...p, especialidade: e.target.value }))} /></div>
               <div><label className="text-sm font-semibold text-foreground mb-1.5 block">CRM</label><Input value={profile.crm} onChange={e => setProfile(p => ({ ...p, crm: e.target.value }))} /></div>
               <div><label className="text-sm font-semibold text-foreground mb-1.5 block">E-mail Profissional</label><Input type="email" value={profile.email} onChange={e => setProfile(p => ({ ...p, email: e.target.value }))} /></div>
               <div><label className="text-sm font-semibold text-foreground mb-1.5 block">Telefone de Contato</label><Input value={profile.phone} onChange={e => setProfile(p => ({ ...p, phone: e.target.value }))} /></div>

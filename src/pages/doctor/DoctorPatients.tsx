@@ -3,16 +3,16 @@ import { Search, Eye, UserPlus, Save } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useUser, Doctor } from '@/contexts/UserContext';
+import { useUser, MEDICO } from '@/contexts/UserContext';
 import PatientRecord from '@/components/PatientRecord';
 import { toast } from 'sonner';
 
 const DoctorPatients = () => {
   const { patients, currentUser, registerPatient } = useUser();
-  const doctor = currentUser as Doctor;
+  const doctor = currentUser as MEDICO;
 
   const [search, setSearch] = useState('');
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
   // Registration Form State
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -26,8 +26,8 @@ const DoctorPatients = () => {
   });
 
   const filtered = patients
-    .filter(p => !doctor || p.doctorId === doctor.id) // Filter by doctor
-    .filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    .filter(p => !doctor || p.medico_id === doctor.id) // Filter by doctor
+    .filter(p => p.nome.toLowerCase().includes(search.toLowerCase()));
 
   const selectedPatient = selectedPatientId
     ? patients.find(p => p.id === selectedPatientId)
@@ -42,13 +42,20 @@ const DoctorPatients = () => {
 
     try {
       registerPatient({
-        name: regForm.name,
+        nome: regForm.name,
         email: regForm.email,
         cpf: regForm.cpf,
         phone: regForm.phone,
         age: parseInt(regForm.age) || 0,
         bloodType: regForm.bloodType,
-        doctorId: doctor.id
+        medico_id: doctor.id,
+        socialName: '',
+        maritalStatus: '',
+        sexuality: '',
+        religion: '',
+        organDonor: false,
+        address: '',
+        requiresCompanion: false,
       });
       setIsRegisterModalOpen(false);
       setRegForm({ name: '', email: '', cpf: '', phone: '', age: '', bloodType: 'A+' });
@@ -90,11 +97,11 @@ const DoctorPatients = () => {
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <span className="text-primary font-semibold text-lg">
-                    {patient.name.substring(0, 2).toUpperCase()}
+                    {patient.nome.substring(0, 2).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground text-lg">{patient.name}</p>
+                  <p className="font-semibold text-foreground text-lg">{patient.nome}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
                     <span>Idade: {patient.age}</span> •
                     <span className="px-2 py-0.5 bg-secondary text-secondary-foreground rounded-full text-xs font-medium">Sangue: {patient.bloodType}</span>

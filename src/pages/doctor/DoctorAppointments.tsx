@@ -14,8 +14,8 @@ const DoctorAppointments = () => {
   const { appointments } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
+  const [selectedApptId, setSelectedApptId] = useState<number | null>(null);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -23,11 +23,11 @@ const DoctorAppointments = () => {
   const startDayOfWeek = getDay(monthStart);
 
   const appointmentsForDate = (date: Date) =>
-    appointments.filter(a => isSameDay(parseISO(a.date), date));
+    appointments.filter(a => isSameDay(parseISO(a.data_hora.split('T')[0]), date));
 
   const filteredAppointments = selectedDate
     ? appointmentsForDate(selectedDate)
-    : appointments.filter(a => isSameMonth(parseISO(a.date), currentMonth));
+    : appointments.filter(a => isSameMonth(parseISO(a.data_hora.split('T')[0]), currentMonth));
 
   const statusColors: Record<string, string> = {
     confirmado: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -110,9 +110,9 @@ const DoctorAppointments = () => {
                     <div>
                       <p className="font-medium text-foreground">{appt.patientName}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        <span>{format(parseISO(appt.date), 'dd/MM/yyyy')}</span>
+                        <span>{format(parseISO(appt.data_hora.split('T')[0]), 'dd/MM/yyyy')}</span>
                         <span>•</span>
-                        <span>{appt.time}</span>
+                        <span>{appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}</span>
                         <span>•</span>
                         <span>{appt.type}</span>
                       </div>
@@ -168,7 +168,7 @@ const DoctorAppointments = () => {
                     <p className="text-sm text-muted-foreground">Paciente</p>
                     <p className="font-semibold text-foreground">{selectedAppt.patientName}</p>
                   </div>
-                  <button onClick={() => setSelectedPatientId(selectedAppt.patientId)} className="text-xs text-primary font-medium hover:underline">
+                  <button onClick={() => setSelectedPatientId(selectedAppt.usuario_id)} className="text-xs text-primary font-medium hover:underline">
                     Ver Ficha Completa
                   </button>
                 </div>
@@ -177,14 +177,14 @@ const DoctorAppointments = () => {
                     <p className="text-sm text-muted-foreground">Data</p>
                     <div className="flex items-center gap-1.5 font-medium text-foreground text-sm">
                       <Calendar className="w-3.5 h-3.5" />
-                      {format(parseISO(selectedAppt.date), 'dd/MM/yyyy')}
+                      {format(parseISO(selectedAppt.data_hora.split('T')[0]), 'dd/MM/yyyy')}
                     </div>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Horário</p>
                     <div className="flex items-center gap-1.5 font-medium text-foreground text-sm">
                       <Clock className="w-3.5 h-3.5" />
-                      {selectedAppt.time}
+                      {selectedAppt.data_hora?.includes('T') ? selectedAppt.data_hora.split('T')[1].substring(0,5) : ''}
                     </div>
                   </div>
                 </div>

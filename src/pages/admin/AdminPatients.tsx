@@ -10,7 +10,7 @@ import PatientRecord from '@/components/PatientRecord';
 const AdminPatients = () => {
     const { patients, doctors, registerPatient } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+    const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [newName, setNewName] = useState('');
@@ -31,13 +31,13 @@ const AdminPatients = () => {
     const handleRegister = () => {
         if (!newName || !newEmail || !newCpf || !newDoctorId || !newAge) return;
         registerPatient({
-            name: newName,
+            nome: newName,
             email: newEmail,
             cpf: newCpf,
             phone: newPhone,
             age: Number(newAge),
             bloodType: newBloodType || 'Não informado',
-            doctorId: newDoctorId,
+            medico_id: Number(newDoctorId),
             socialName: newSocialName,
             maritalStatus: newMaritalStatus,
             sexuality: newSexuality,
@@ -52,7 +52,7 @@ const AdminPatients = () => {
     };
 
     const filteredPatients = patients.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.cpf.includes(searchTerm)
     );
 
@@ -90,7 +90,7 @@ const AdminPatients = () => {
                                 <Users className="w-6 h-6 text-muted-foreground" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-foreground">{patient.name}</h3>
+                                <h3 className="font-bold text-foreground">{patient.nome}</h3>
                                 <p className="text-sm text-muted-foreground">Idade: {patient.age} anos</p>
                                 <p className="text-xs text-muted-foreground mt-0.5">CPF: {patient.cpf}</p>
                             </div>
@@ -160,7 +160,7 @@ const AdminPatients = () => {
                                     <SelectValue placeholder="Selecione um médico..." />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                                    {doctors.map(d => <SelectItem key={d.id} value={d.id.toString()}>{d.nome}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>

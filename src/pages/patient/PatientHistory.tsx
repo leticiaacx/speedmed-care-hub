@@ -17,8 +17,8 @@ const PatientHistory = () => {
   const [selectedAppt, setSelectedAppt] = useState<any | null>(null);
 
   const myAppointments = appointments
-    .filter(a => a.patientId === '1' || a.patientName === 'José Silva')
-    .sort((a, b) => b.date.localeCompare(a.date));
+    .filter(a => a.usuario_id === 1 || a.patientName === 'José Silva')
+    .sort((a, b) => b.data_hora.localeCompare(a.data_hora));
 
   const statusColors: Record<string, string> = {
     confirmado: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
@@ -66,8 +66,8 @@ const PatientHistory = () => {
                 </div>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{format(parseISO(appt.date), 'dd/MM/yyyy')}</span>
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{appt.time}</span>
+                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{format(parseISO(appt.data_hora.split('T')[0]), 'dd/MM/yyyy')}</span>
+                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}</span>
                 <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{appt.location}</span>
               </div>
             </div>
@@ -93,7 +93,7 @@ const PatientHistory = () => {
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  <p className="flex justify-between"><span className="text-muted-foreground">Data/Hora:</span> <span className="font-medium">{format(parseISO(selectedAppt.date), 'dd/MM/yyyy')} às {selectedAppt.time}</span></p>
+                  <p className="flex justify-between"><span className="text-muted-foreground">Data/Hora:</span> <span className="font-medium">{format(parseISO(selectedAppt.data_hora.split('T')[0]), 'dd/MM/yyyy')} às {selectedAppt.data_hora.includes('T') ? selectedAppt.data_hora.split('T')[1].substring(0,5) : ''}</span></p>
                   <p className="flex justify-between"><span className="text-muted-foreground">Local:</span> <span className="font-medium">{selectedAppt.location}</span></p>
                   <p className="flex justify-between"><span className="text-muted-foreground">Motivo:</span> <span className="font-medium">{selectedAppt.reason}</span></p>
                 </div>

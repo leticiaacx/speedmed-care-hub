@@ -21,9 +21,9 @@ export interface PatientFile {
 
 export interface DoctorReport {
   id: string;
-  patientId: number;
+  usuario_id: number;
   patientName: string;
-  date: string;
+  data_hora: string;
   content: string;
   status: 'draft' | 'sent';
 }

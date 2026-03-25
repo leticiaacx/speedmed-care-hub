@@ -3,7 +3,7 @@ import { Calendar, ClipboardList, FileText, Home, LogOut, Settings, User, Moon, 
 import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
-import { useUser, Doctor } from '@/contexts/UserContext';
+import { useUser, MEDICO } from '@/contexts/UserContext';
 
 const menuItems = [
   { icon: Home, label: 'Painel', path: '/doctor' },
@@ -19,7 +19,7 @@ const DoctorSidebar = () => {
   const { theme, toggleTheme } = useTheme();
   const { unreadCount, pendingAppointmentsCount } = useAppointments();
   const { currentUser, logout } = useUser();
-  const doctor = currentUser as Doctor | null;
+  const doctor = currentUser as MEDICO | null;
 
   return (
     <>
@@ -58,11 +58,11 @@ const DoctorSidebar = () => {
         <div className="p-4 border-t border-border mt-auto">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">{doctor?.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2) || 'MD'}</span>
+              <span className="text-sm font-bold text-primary-foreground">{doctor?.nome.split(' ').map((n: string) => n[0]).join('').substring(0, 2) || 'MD'}</span>
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-foreground truncate" title={doctor?.name || ''}>{doctor?.name || 'Médico'}</p>
-              <p className="text-xs text-muted-foreground truncate">{doctor?.specialty || 'Especialidade'}</p>
+              <p className="text-sm font-medium text-foreground truncate" title={doctor?.nome || ''}>{doctor?.nome || 'Médico'}</p>
+              <p className="text-xs text-muted-foreground truncate">{doctor?.especialidade || 'Especialidade'}</p>
             </div>
           </div>
           <button

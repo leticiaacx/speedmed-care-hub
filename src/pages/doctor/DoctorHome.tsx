@@ -1,7 +1,7 @@
 import { Calendar, Clock, MapPin, Users, FileText, AlertCircle, TrendingUp, Activity, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppointments } from '@/contexts/AppointmentContext';
-import { useUser, Doctor } from '@/contexts/UserContext';
+import { useUser, MEDICO } from '@/contexts/UserContext';
 import { format, parseISO, isToday, isFuture } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -9,12 +9,12 @@ const DoctorHome = () => {
   const navigate = useNavigate();
   const { appointments, notifications } = useAppointments();
   const { currentUser } = useUser();
-  const doctor = currentUser as Doctor | null;
+  const doctor = currentUser as MEDICO | null;
 
-  const todayAppointments = appointments.filter(a => isToday(parseISO(a.date)));
+  const todayAppointments = appointments.filter(a => isToday(parseISO(a.data_hora.split('T')[0])));
   const upcomingAppointments = appointments
-    .filter(a => isFuture(parseISO(a.date)))
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .filter(a => isFuture(parseISO(a.data_hora.split('T')[0])))
+    .sort((a, b) => a.data_hora.localeCompare(b.data_hora))
     .slice(0, 4);
 
   const activeTreatments = 315;
@@ -45,7 +45,7 @@ const DoctorHome = () => {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Visão Geral</h1>
         <p className="text-muted-foreground mt-1">
-          Bem-vindo de volta, {doctor ? doctor.name.split(' ')[0] : 'Dr.'}. Aqui está o resumo de hoje.
+          Bem-vindo de volta, {doctor ? doctor.nome.split(' ')[0] : 'Dr.'}. Aqui está o resumo de hoje.
         </p>
       </div>
 
@@ -99,9 +99,9 @@ const DoctorHome = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">{appt.time}</p>
+                    <p className="text-sm font-medium text-foreground">{appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}</p>
                     <p className="text-xs text-muted-foreground">
-                      {isToday(parseISO(appt.date)) ? 'Today' : format(parseISO(appt.date), 'dd/MM')}
+                      {isToday(parseISO(appt.data_hora.split('T')[0])) ? 'Today' : format(parseISO(appt.data_hora.split('T')[0]), 'dd/MM')}
                     </p>
                   </div>
                 </div>

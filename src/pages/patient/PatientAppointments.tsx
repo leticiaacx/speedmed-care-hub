@@ -38,22 +38,24 @@ const PatientAppointments = () => {
     clearPatientNotifications();
   }, [clearPatientNotifications]);
 
-  const myAppointments = appointments.filter(a => a.patientId === '1' || a.patientName === 'José Silva');
+  const myAppointments = appointments.filter(a => a.usuario_id === 1 || a.patientName === 'José Silva');
 
   const bookedTimes = (date: Date) =>
-    appointments.filter(a => isSameDay(parseISO(a.date), date) && a.status !== 'cancelado').map(a => a.time);
+    appointments.filter(a => isSameDay(parseISO(a.data_hora.split('T')[0]), date) && a.status !== 'cancelado').map(a => a.data_hora.includes('T') ? a.data_hora.split('T')[1].substring(0,5) : '');
 
   const handleBook = () => {
     if (!bookingDate || !selectedTime) return;
     addAppointment({
-      patientId: '1',
+      usuario_id: 1,
       patientName: 'José Silva',
-      date: format(bookingDate, 'yyyy-MM-dd'),
-      time: selectedTime,
+      medico_id: mockDoctor.id,
+      doctorName: mockDoctor.nome,
+      data_hora: `${format(bookingDate, 'yyyy-MM-dd')}T${selectedTime}`,
       type: appointmentType,
       status: 'pendente',
       location: location,
       reason: reason || 'Consulta médica',
+      clinica_id: 1,
     });
     setShowBooking(false);
     setSelectedTime('');
@@ -95,7 +97,7 @@ const PatientAppointments = () => {
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: startDayOfWeek }).map((_, i) => <div key={`e-${i}`} />)}
             {daysInMonth.map(day => {
-              const hasAppt = myAppointments.some(a => isSameDay(parseISO(a.date), day) && a.status !== 'cancelado');
+              const hasAppt = myAppointments.some(a => isSameDay(parseISO(a.data_hora.split('T')[0]), day) && a.status !== 'cancelado');
               const isSelected = selectedDate && isSameDay(day, selectedDate);
               const isToday = isSameDay(day, new Date());
               return (
@@ -127,18 +129,18 @@ const PatientAppointments = () => {
             </div>
           ) : (
             myAppointments
-              .filter(a => !selectedDate || isSameDay(parseISO(a.date), selectedDate))
-              .sort((a, b) => b.date.localeCompare(a.date))
+              .filter(a => !selectedDate || isSameDay(parseISO(a.data_hora.split('T')[0]), selectedDate))
+              .sort((a, b) => b.data_hora.localeCompare(a.data_hora))
               .map(appt => (
                 <div key={appt.id} className="speedmed-card hover:border-primary/50 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2 text-sm text-foreground mb-1">
                         <span className="font-medium bg-primary/10 text-primary px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" /> {format(parseISO(appt.date), 'dd/MM/yyyy')}
+                          <Calendar className="w-3.5 h-3.5" /> {format(parseISO(appt.data_hora.split('T')[0]), 'dd/MM/yyyy')}
                         </span>
                         <span className="font-medium bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> {appt.time}
+                          <Clock className="w-3.5 h-3.5" /> {appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}
                         </span>
                       </div>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
@@ -184,11 +186,11 @@ const PatientAppointments = () => {
                 <label className="text-sm font-medium text-foreground">Profissional</label>
                 <div className="p-3 bg-secondary/50 rounded-lg border border-border flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-                    {mockDoctor.name.substring(0, 2).toUpperCase()}
+                    {mockDoctor.nome.substring(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">{mockDoctor.name}</p>
-                    <p className="text-xs text-muted-foreground">{mockDoctor.specialty}</p>
+                    <p className="font-semibold text-sm">{mockDoctor.nome}</p>
+                    <p className="text-xs text-muted-foreground">{mockDoctor.especialidade}</p>
                   </div>
                 </div>
               </div>

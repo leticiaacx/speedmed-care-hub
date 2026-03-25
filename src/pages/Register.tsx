@@ -30,13 +30,20 @@ const Register = () => {
         }
 
         const patientData = {
-            name: formData.name,
+            nome: formData.name,
             email: formData.email,
             cpf: formData.cpf,
             phone: formData.phone,
             age: parseInt(formData.age) || 0,
             bloodType: formData.bloodType,
-            doctorId: formData.doctorId
+            medico_id: Number(formData.doctorId),
+            socialName: '',
+            maritalStatus: '',
+            sexuality: '',
+            religion: '',
+            organDonor: false,
+            address: '',
+            requiresCompanion: false,
         };
 
         registerPatient(patientData);
@@ -116,7 +123,7 @@ const Register = () => {
                                 <SelectTrigger className="rounded-xl border-primary/30"><SelectValue placeholder="Selecione o(a) especialista" /></SelectTrigger>
                                 <SelectContent>
                                     {doctors.map(doc => (
-                                        <SelectItem key={doc.id} value={doc.id}>{doc.name} - {doc.specialty}</SelectItem>
+                                        <SelectItem key={doc.id} value={doc.id.toString()}>{doc.nome} - {doc.especialidade}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>

@@ -65,7 +65,7 @@ const PatientLayout = () => {
               <User className="w-5 h-5 text-primary-foreground" />
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-foreground truncate">{mockPatientUser.name}</p>
+              <p className="text-sm font-medium text-foreground truncate">{mockPatientUser.nome}</p>
               <p className="text-xs text-muted-foreground truncate">Paciente</p>
             </div>
           </div>

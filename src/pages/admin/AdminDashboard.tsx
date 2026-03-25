@@ -7,14 +7,14 @@ const AdminDashboard = () => {
     const { appointments, pendingAppointmentsCount } = useAppointments();
 
     const todayDate = new Date().toISOString().split('T')[0];
-    const totalAppointmentsToday = appointments.filter(a => a.date === todayDate).length;
+    const totalAppointmentsToday = appointments.filter(a => a.data_hora.startsWith(todayDate)).length;
     
     const todaysAppointments = appointments
-        .filter(a => a.date === todayDate)
-        .sort((a, b) => a.time.localeCompare(b.time));
+        .filter(a => a.data_hora.startsWith(todayDate))
+        .sort((a, b) => a.data_hora.localeCompare(b.data_hora));
 
     const nextAppointment = todaysAppointments.find(a => a.status === 'confirmado');
-    const nextPatient = nextAppointment ? patients.find(p => p.id === nextAppointment.patientId) : null;
+    const nextPatient = nextAppointment ? patients.find(p => p.id === nextAppointment.usuario_id) : null;
 
     const stats = [
         { title: 'Médicos Ativos', value: doctors.length, icon: Stethoscope, desc: 'Equipe clínica' },
@@ -63,7 +63,7 @@ const AdminDashboard = () => {
                             {todaysAppointments.map(appt => (
                                 <div key={appt.id} className="flex justify-between items-center p-3 border rounded-xl bg-background">
                                     <div className="flex items-center gap-4">
-                                        <div className="font-bold text-lg text-primary">{appt.time}</div>
+                                        <div className="font-bold text-lg text-primary">{appt.data_hora.split('T')[1]?.substring(0, 5)}</div>
                                         <div>
                                             <p className="font-semibold">{appt.patientName}</p>
                                             <p className="text-xs text-muted-foreground">Para: {appt.doctorName || 'Médico não definido'}</p>
@@ -93,10 +93,10 @@ const AdminDashboard = () => {
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                                        {nextPatient.name.substring(0,2).toUpperCase()}
+                                        {nextPatient.nome.substring(0,2).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-foreground">{nextPatient.name}</p>
+                                        <p className="font-bold text-foreground">{nextPatient.nome}</p>
                                         <p className="text-xs text-muted-foreground">{nextPatient.age} anos • Sangue: {nextPatient.bloodType}</p>
                                     </div>
                                 </div>

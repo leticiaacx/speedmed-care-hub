@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Calendar, Clock, MapPin, Phone, Mail, Droplets, AlertTriangle, Pill, Edit, Save, X, FileText, CheckCircle, ChevronDown, ChevronUp, Upload } from 'lucide-react';
-import { Patient } from '@/data/mockData';
+import { USUARIO } from '@/data/mockData';
 import { format, parseISO } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,14 +10,14 @@ import { useUser } from '@/contexts/UserContext';
 import { useNavigate } from 'react-router-dom';
 
 interface PatientRecordProps {
-  patient: Patient;
+  patient: USUARIO;
   onConcludeAppointment?: () => void;
 }
 
 const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [expandedConsultation, setExpandedConsultation] = useState<number | null>(null);
-  const [editedPatient, setEditedPatient] = useState<Patient>(patient);
+  const [editedPatient, setEditedPatient] = useState<USUARIO>(patient);
 
   // Local state for adding new items
   const [newAllergy, setNewAllergy] = useState('');
@@ -35,7 +35,7 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
   const isReadOnly = userRole === 'admin';
 
   const handleGenerateReport = () => {
-    let reportContent = `RELATÓRIO MÉDICO - ${patient.name}\n`;
+    let reportContent = `RELATÓRIO MÉDICO - ${patient.nome}\n`;
     reportContent += `Data: ${format(new Date(), 'dd/MM/yyyy')}\n\n`;
     reportContent += `TRATAMENTO:\n`;
     reportContent += `[Descreva o tratamento aqui]\n\n`;
@@ -45,9 +45,9 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
     reportContent += `[Adicione observações adicionais]`;
 
     saveDoctorReport({
-      patientId: patient.id,
-      patientName: patient.name,
-      date: format(new Date(), 'dd/MM/yyyy'),
+      usuario_id: patient.id,
+      patientName: patient.nome,
+      data_hora: new Date().toISOString(),
       content: reportContent,
       status: 'draft'
     });
@@ -100,11 +100,11 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
         <div className="flex items-center gap-4">
           <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center shadow-lg">
             <span className="text-primary-foreground font-bold text-3xl">
-              {editedPatient.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+              {editedPatient.nome.split(' ').map(n => n[0]).join('').substring(0, 2)}
             </span>
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-foreground">{editedPatient.name}</h3>
+            <h3 className="text-2xl font-bold text-foreground">{editedPatient.nome}</h3>
             <p className="text-muted-foreground">{editedPatient.age} anos • CPF: {editedPatient.cpf}</p>
           </div>
         </div>

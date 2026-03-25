@@ -21,7 +21,7 @@ const PatientSettings = () => {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [profile, setProfile] = useState({
-    name: mockPatientUser.name,
+    name: mockPatientUser.nome,
     email: mockPatientUser.email,
     phone: mockPatientUser.phone,
     age: mockPatientUser.age.toString(),

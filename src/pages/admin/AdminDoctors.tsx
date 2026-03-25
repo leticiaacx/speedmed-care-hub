@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useUser, Doctor } from '@/contexts/UserContext';
+import { useUser, MEDICO } from '@/contexts/UserContext';
 import { Stethoscope, Plus, Clock, Save, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 const AdminDoctors = () => {
     const { doctors, registerDoctor, updateDoctorSchedule } = useUser();
     const [showAddModal, setShowAddModal] = useState(false);
-    const [selectedDoc, setSelectedDoc] = useState<Doctor | null>(null);
+    const [selectedDoc, setSelectedDoc] = useState<MEDICO | null>(null);
     const [newDocName, setNewDocName] = useState('');
     const [newDocCRM, setNewDocCRM] = useState('');
     const [newDocSpecialty, setNewDocSpecialty] = useState('');
@@ -21,11 +21,12 @@ const AdminDoctors = () => {
     const handleRegister = () => {
         if (!newDocName || !newDocCRM || !newDocSpecialty || !newDocEmail) return;
         registerDoctor({
-            name: newDocName,
+            nome: newDocName,
             crm: newDocCRM,
-            specialty: newDocSpecialty,
+            especialidade: newDocSpecialty,
             email: newDocEmail,
-            password: newDocPassword,
+            senha: newDocPassword,
+            clinica_id: 1,
             schedule: []
         });
         setNewDocName('');
@@ -36,9 +37,9 @@ const AdminDoctors = () => {
         setShowAddModal(false);
     };
 
-    const openScheduleModal = (doctor: Doctor) => {
+    const openScheduleModal = (doctor: MEDICO) => {
         setSelectedDoc(doctor);
-        setEditingSchedule([...doctor.schedule]);
+        setEditingSchedule([...(doctor.schedule || [])]);
     };
 
     const addScheduleRow = () => {
@@ -84,14 +85,14 @@ const AdminDoctors = () => {
                                 <Stethoscope className="w-6 h-6 text-primary" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg text-foreground leading-tight">{doctor.name}</h3>
-                                <p className="text-sm text-primary font-medium mt-0.5">{doctor.specialty}</p>
+                                <h3 className="font-bold text-lg text-foreground leading-tight">{doctor.nome}</h3>
+                                <p className="text-sm text-primary font-medium mt-0.5">{doctor.especialidade}</p>
                                 <p className="text-xs text-muted-foreground mt-1">{doctor.crm}</p>
                             </div>
                         </div>
 
                         <div className="mt-auto pt-4 border-t border-border flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground">{doctor.schedule.length} dias na semana</span>
+                            <span className="text-xs text-muted-foreground">{doctor.schedule?.length || 0} dias na semana</span>
                             <Button variant="outline" size="sm" onClick={() => openScheduleModal(doctor)} className="gap-2 text-xs">
                                 <Clock className="w-3 h-3" /> Horários
                             </Button>
@@ -138,7 +139,7 @@ const AdminDoctors = () => {
             <Dialog open={!!selectedDoc} onOpenChange={(open) => !open && setSelectedDoc(null)}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Horários - {selectedDoc?.name}</DialogTitle>
+                        <DialogTitle>Horários - {selectedDoc?.nome}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <p className="text-sm text-muted-foreground">Defina os dias e os horários que este médico atende na clínica.</p>

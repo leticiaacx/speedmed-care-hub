@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Download, FileText, User, Calendar, Edit, Save, Send } from 'lucide-react';
-import { mockDoctor, Patient } from '@/data/mockData';
+import { mockDoctor, USUARIO } from '@/data/mockData';
 import { useAppointments, DoctorReport } from '@/contexts/AppointmentContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -64,7 +64,7 @@ const DoctorReports = () => {
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(7);
     doc.setTextColor(150);
-    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")} por ${mockDoctor.name}`, 20, pageHeight - 10);
+    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")} por ${mockDoctor.nome}`, 20, pageHeight - 10);
     doc.text('SpeedMed - Sistema de Gestão Médica | www.speedmed.com.br', 20, pageHeight - 5);
   };
 
@@ -113,9 +113,9 @@ const DoctorReports = () => {
     updateDoctorReport(selectedReport.id, reportText);
 
     sendFileToPatient({
-      name: `Relatório Médico - ${selectedReport.date}`,
+      name: `Relatório Médico - ${selectedReport.data_hora}`,
       type: 'PDF',
-      date: selectedReport.date,
+      date: selectedReport.data_hora,
       size: 'Aprox. 150 KB',
       content: reportText
     }, selectedReport.id);
@@ -161,7 +161,7 @@ const DoctorReports = () => {
                   </div>
                   <div>
                     <p className="font-semibold text-foreground">Relatório: {report.patientName}</p>
-                    <p className="text-sm text-muted-foreground">Gerado em: {report.date}</p>
+                    <p className="text-sm text-muted-foreground">Gerado em: {report.data_hora}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">

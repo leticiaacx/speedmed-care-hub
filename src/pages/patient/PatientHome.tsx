@@ -10,7 +10,7 @@ const PatientHome = () => {
   const user = mockPatientUser;
   const { appointments } = useAppointments();
 
-  const patientAppointments = appointments.filter(a => a.patientName === user.name || a.patientId === '1');
+  const patientAppointments = appointments.filter(a => a.patientName === user.nome || a.usuario_id === 1);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -19,7 +19,7 @@ const PatientHome = () => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-lg opacity-90">Olá,</p>
-            <h1 className="text-3xl font-bold">{user.name}</h1>
+            <h1 className="text-3xl font-bold">{user.nome}</h1>
             <p className="opacity-80 mt-1">{format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
           </div>
           <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: 'hsl(0 0% 100% / 0.2)' }}>
