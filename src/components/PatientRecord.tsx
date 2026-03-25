@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, Phone, Mail, Droplets, AlertTriangle, Pill, Edit, Save, X, FileText, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Clock, MapPin, Phone, Mail, Droplets, AlertTriangle, Pill, Edit, Save, X, FileText, CheckCircle, ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import { Patient } from '@/data/mockData';
 import { format, parseISO } from 'date-fns';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,9 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
   const [newMedication, setNewMedication] = useState('');
   const [newHeredity, setNewHeredity] = useState('');
   const [newNote, setNewNote] = useState('');
+  const [mockFiles, setMockFiles] = useState<{name: string, date: string}[]>([
+    { name: 'Exame de Sangue.pdf', date: '10/02/2026' },
+  ]);
 
   const { saveDoctorReport } = useAppointments();
   const { userRole } = useUser();
@@ -80,6 +83,14 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
     const newList = [...(editedPatient[field] || [])];
     newList.splice(index, 1);
     setEditedPatient({ ...editedPatient, [field]: newList });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setMockFiles([...mockFiles, { name: file.name, date: format(new Date(), 'dd/MM/yyyy') }]);
+      toast.success(`Arquivo ${file.name} enviado com sucesso!`);
+    }
   };
 
   return (
@@ -244,6 +255,39 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Files Section */}
+      <div className="p-6 rounded-2xl bg-card border border-border mb-6">
+        <div className="flex items-center justify-between border-b pb-2 mb-4">
+          <h4 className="font-semibold text-lg flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" /> Arquivos, Receitas e Exames
+          </h4>
+          {!isReadOnly && (
+            <div>
+              <Input type="file" id="file-upload" className="hidden" onChange={handleFileUpload} />
+              <label htmlFor="file-upload">
+                <Button asChild variant="outline" className="gap-2 cursor-pointer">
+                  <span><Upload className="w-4 h-4" /> Enviar Arquivo</span>
+                </Button>
+              </label>
+            </div>
+          )}
+        </div>
+        <div className="space-y-2">
+          {mockFiles.map((file, i) => (
+            <div key={i} className="flex justify-between p-3 border rounded-xl bg-background items-center">
+              <div className="flex gap-3 items-center">
+                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <span className="font-medium text-sm">{file.name}</span>
+              </div>
+              <span className="text-xs text-muted-foreground">{file.date}</span>
+            </div>
+          ))}
+          {mockFiles.length === 0 && <p className="text-muted-foreground text-sm text-center py-4">Nenhum arquivo anexado.</p>}
         </div>
       </div>
 

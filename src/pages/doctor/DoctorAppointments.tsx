@@ -11,15 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import PatientRecord from '@/components/PatientRecord';
 
 const DoctorAppointments = () => {
-  const { appointments, updateAppointmentStatus, addAppointment, pendingAppointmentsCount } = useAppointments();
+  const { appointments } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
-  const [denyingApptId, setDenyingApptId] = useState<string | null>(null);
-  const [denyMessage, setDenyMessage] = useState('');
-  const [showNewAppt, setShowNewAppt] = useState(false);
-  const [newAppt, setNewAppt] = useState({ patientId: '', date: '', time: '', type: 'Consulta', reason: '' });
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -42,56 +38,15 @@ const DoctorAppointments = () => {
 
   const selectedPatient = selectedPatientId ? mockPatients.find(p => p.id === selectedPatientId) : null;
 
-  const handleCreateAppt = () => {
-    const patient = mockPatients.find(p => p.id === newAppt.patientId);
-    if (!patient || !newAppt.date || !newAppt.time) return;
-    addAppointment({
-      patientId: patient.id,
-      patientName: patient.name,
-      date: newAppt.date,
-      time: newAppt.time,
-      type: newAppt.type,
-      status: 'confirmado',
-      location: 'Clínica SpeedMed - Unidade Centro',
-      reason: newAppt.reason || 'Consulta médica',
-    });
-    setShowNewAppt(false);
-    setNewAppt({ patientId: '', date: '', time: '', type: 'Consulta', reason: '' });
-  };
 
-  const handleDenySubmit = () => {
-    if (denyingApptId) {
-      updateAppointmentStatus(denyingApptId, 'cancelado');
-      // Here we would typically send the push notification or email with denyMessage
-      console.log(`Mensagem de cancelamento enviada ao paciente: ${denyMessage}`);
-      setDenyingApptId(null);
-      setDenyMessage('');
-      setSelectedApptId(null);
-    }
-  };
 
   const selectedAppt = selectedApptId ? appointments.find(a => a.id === selectedApptId) : null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Agendamentos</h1>
-        <Button onClick={() => setShowNewAppt(true)} className="gap-2">
-          <Plus className="w-4 h-4" /> Novo Agendamento
-        </Button>
+        <h1 className="text-3xl font-bold text-foreground">Acompanhamento de Agendamentos</h1>
       </div>
-
-      {pendingAppointmentsCount > 0 && (
-        <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-xl flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-          <div>
-            <h3 className="text-sm font-semibold text-destructive">Atenção: Agendamentos Pendentes</h3>
-            <p className="text-sm text-destructive/90 mt-1">
-              Você possui <strong>{pendingAppointmentsCount}</strong> solicitação(ões) de agendamento aguardando aprovação. Por favor, revise a lista abaixo para aceitar ou recusar.
-            </p>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
@@ -169,7 +124,7 @@ const DoctorAppointments = () => {
                       {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
                     </span>
                     {appt.status === 'pendente' && (
-                      <span className="text-xs text-muted-foreground mr-auto sm:mr-0 pl-1">Revisão necessária</span>
+                      <span className="text-xs text-muted-foreground mr-auto sm:mr-0 pl-1">Aguardando Clínica</span>
                     )}
                     <button
                       onClick={() => setSelectedApptId(appt.id)}
@@ -244,105 +199,8 @@ const DoctorAppointments = () => {
                   </p>
                 </div>
               </div>
-
-              {selectedAppt.status === 'pendente' && (
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    className="flex-1 gap-2 bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => {
-                      updateAppointmentStatus(selectedAppt.id, 'confirmado');
-                      setSelectedApptId(null);
-                    }}
-                  >
-                    <Check className="w-4 h-4" /> Aceitar
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    className="flex-1 gap-2"
-                    onClick={() => setDenyingApptId(selectedAppt.id)}
-                  >
-                    <X className="w-4 h-4" /> Negar
-                  </Button>
-                </div>
-              )}
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Deny Reason Modal */}
-      <Dialog open={!!denyingApptId} onOpenChange={(open) => {
-        if (!open) {
-          setDenyingApptId(null);
-          setDenyMessage('');
-        }
-      }}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Motivo da Recusa</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Por favor, informe ao paciente o motivo de não poder aceitar o agendamento neste horário.
-            </p>
-            <textarea
-              className="w-full min-h-[100px] p-3 rounded-lg border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Ex: Tive um imprevisto médico neste horário e não poderei atender. Por favor, remarque."
-              value={denyMessage}
-              onChange={(e) => setDenyMessage(e.target.value)}
-            />
-            <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => {
-                setDenyingApptId(null);
-                setDenyMessage('');
-              }}>Cancelar</Button>
-              <Button variant="destructive" onClick={handleDenySubmit} disabled={!denyMessage.trim()}>
-                Enviar e Recusar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* New appointment modal */}
-      <Dialog open={showNewAppt} onOpenChange={setShowNewAppt}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Novo Agendamento</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground">Paciente</label>
-              <Select value={newAppt.patientId} onValueChange={v => setNewAppt(p => ({ ...p, patientId: v }))}>
-                <SelectTrigger><SelectValue placeholder="Selecione o paciente" /></SelectTrigger>
-                <SelectContent>
-                  {mockPatients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">Data</label>
-                <Input type="date" value={newAppt.date} onChange={e => setNewAppt(p => ({ ...p, date: e.target.value }))} />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Hora</label>
-                <Input type="time" value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))} />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Tipo</label>
-              <Select value={newAppt.type} onValueChange={v => setNewAppt(p => ({ ...p, type: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Consulta">Consulta</SelectItem>
-                  <SelectItem value="Retorno">Retorno</SelectItem>
-                  <SelectItem value="Exame">Exame</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Motivo</label>
-              <Input value={newAppt.reason} onChange={e => setNewAppt(p => ({ ...p, reason: e.target.value }))} placeholder="Motivo da consulta" />
-            </div>
-            <Button onClick={handleCreateAppt} className="w-full">Agendar</Button>
-          </div>
         </DialogContent>
       </Dialog>
     </div>

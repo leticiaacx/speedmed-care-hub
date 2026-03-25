@@ -2,23 +2,24 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useUser, UserRole } from '@/contexts/UserContext';
+import { useUser } from '@/contexts/UserContext';
 import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
 import loginBg from '@/assets/login-bg.jpg';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState<UserRole>('patient');
+  const [email, setEmail] = useState('admin@speedmed.com');
+  const [password, setPassword] = useState('123456');
   const navigate = useNavigate();
   const { login } = useUser();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    login(userType); // login using mock data for now
-    if (userType === 'admin') navigate('/admin');
-    else if (userType === 'doctor') navigate('/doctor');
-    else navigate('/patient');
+    const result = login(email, password);
+    if (result.success) {
+      if (result.role === 'admin') navigate('/admin');
+      else if (result.role === 'doctor') navigate('/doctor');
+      else navigate('/patient');
+    }
   };
 
   return (
@@ -35,39 +36,7 @@ const Login = () => {
             <img src={speedmedLogo} alt="SpeedMed" className="h-24 w-auto object-contain mx-auto mb-6 rounded-xl" />
           </div>
 
-          {/* Type selector */}
-          <div className="flex bg-secondary p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setUserType('patient')}
-              className={`flex-1 py-2 rounded-lg font-medium text-sm transition-all ${userType === 'patient'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-                }`}
-            >
-              Paciente
-            </button>
-            <button
-              type="button"
-              onClick={() => setUserType('doctor')}
-              className={`flex-1 py-2 rounded-lg font-medium text-sm transition-all ${userType === 'doctor'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-                }`}
-            >
-              Médico
-            </button>
-            <button
-              type="button"
-              onClick={() => setUserType('admin')}
-              className={`flex-1 py-2 rounded-lg font-medium text-sm transition-all ${userType === 'admin'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-                }`}
-            >
-              Hospital
-            </button>
-          </div>
+          {/* Removed Type selector, handled by email */}
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-1.5">

@@ -11,7 +11,7 @@ interface UserContextType {
     doctors: Doctor[];
     patients: Patient[];
     admins: Admin[];
-    login: (role: UserRole, id?: string) => void;
+    login: (email: string, password?: string) => { success: boolean; role?: UserRole };
     logout: () => void;
     registerDoctor: (doctor: Omit<Doctor, 'id'>) => void;
     registerPatient: (patient: Omit<Patient, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'> & { doctorId: string }) => void;
@@ -35,16 +35,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         return null;
     };
 
-    const login = useCallback((role: UserRole, id?: string) => {
-        setUserRole(role);
-        if (id) {
-            setCurrentUserId(id);
-        } else {
-            // Default fallback for demo
-            if (role === 'admin') setCurrentUserId(admins[0]?.id || null);
-            if (role === 'doctor') setCurrentUserId(doctors[0]?.id || null);
-            if (role === 'patient') setCurrentUserId(patients[0]?.id || null);
-        }
+    const login = useCallback((email: string, password?: string) => {
+        const admin = admins.find(a => a.email === email);
+        if (admin) { setUserRole('admin'); setCurrentUserId(admin.id); return { success: true, role: 'admin' as UserRole }; }
+
+        const doctor = doctors.find(d => d.email === email);
+        if (doctor) { setUserRole('doctor'); setCurrentUserId(doctor.id); return { success: true, role: 'doctor' as UserRole }; }
+
+        const patient = patients.find(p => p.email === email);
+        if (patient) { setUserRole('patient'); setCurrentUserId(patient.id); return { success: true, role: 'patient' as UserRole }; }
+
+        toast.error('Credenciais inválidas. Verifique seu e-mail e tente novamente.');
+        return { success: false };
     }, [admins, doctors, patients]);
 
     const logout = useCallback(() => {
@@ -56,6 +58,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         const newDoc: Doctor = { ...doctorData, id: `d${Date.now()}` };
         setDoctors(prev => [...prev, newDoc]);
         toast.success('Médico cadastrado com sucesso!');
+        if (doctorData.email) {
+            toast.info(`Credenciais de acesso enviadas para ${doctorData.email}. Senha temporária: 123456`, { duration: 6000 });
+        }
     }, []);
 
     const registerPatient = useCallback((patientData: Omit<Patient, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'> & { doctorId: string }) => {

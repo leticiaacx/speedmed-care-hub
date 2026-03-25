@@ -78,6 +78,7 @@ export const mockDoctor: Doctor = {
     { dayOfWeek: 4, startTime: '08:00', endTime: '18:00' },
     { dayOfWeek: 5, startTime: '08:00', endTime: '17:00' },
   ],
+  email: 'medico@speedmed.com',
 };
 
 export const mockDoctors: Doctor[] = [
@@ -91,6 +92,7 @@ export const mockDoctors: Doctor[] = [
       { dayOfWeek: 2, startTime: '09:00', endTime: '16:00' },
       { dayOfWeek: 4, startTime: '09:00', endTime: '16:00' },
     ],
+    email: 'medico2@speedmed.com',
   }
 ];
 

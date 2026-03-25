@@ -12,21 +12,24 @@ const AdminDoctors = () => {
     const [newDocName, setNewDocName] = useState('');
     const [newDocCRM, setNewDocCRM] = useState('');
     const [newDocSpecialty, setNewDocSpecialty] = useState('');
+    const [newDocEmail, setNewDocEmail] = useState('');
 
     // Temporarily hold schedule changes before saving
     const [editingSchedule, setEditingSchedule] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>([]);
 
     const handleRegister = () => {
-        if (!newDocName || !newDocCRM || !newDocSpecialty) return;
+        if (!newDocName || !newDocCRM || !newDocSpecialty || !newDocEmail) return;
         registerDoctor({
             name: newDocName,
             crm: newDocCRM,
             specialty: newDocSpecialty,
+            email: newDocEmail,
             schedule: []
         });
         setNewDocName('');
         setNewDocCRM('');
         setNewDocSpecialty('');
+        setNewDocEmail('');
         setShowAddModal(false);
     };
 
@@ -102,6 +105,10 @@ const AdminDoctors = () => {
                         <div className="space-y-1.5">
                             <label className="text-sm font-medium">Nome Completo</label>
                             <Input placeholder="Dra. Leticia..." value={newDocName} onChange={e => setNewDocName(e.target.value)} />
+                        </div>
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium">E-mail Institucional</label>
+                            <Input type="email" placeholder="medico@speedmed.com" value={newDocEmail} onChange={e => setNewDocEmail(e.target.value)} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
