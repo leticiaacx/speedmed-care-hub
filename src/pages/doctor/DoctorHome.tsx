@@ -1,15 +1,19 @@
-import { Calendar as CalendarIcon, Clock, Users, ChevronRight, User, Pill } from 'lucide-react';
+import { ChevronRight, User, Clock, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { useUser, MEDICO } from '@/contexts/UserContext';
 import { format, parseISO, isToday, isFuture } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useState } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import PatientRecord from '@/components/PatientRecord';
 
 const DoctorHome = () => {
   const navigate = useNavigate();
-  const { appointments, notifications } = useAppointments();
-  const { currentUser } = useUser();
+  const { appointments } = useAppointments();
+  const { currentUser, patients } = useUser();
   const doctor = currentUser as MEDICO | null;
+  const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
   const todayAppointments = appointments.filter(a => isToday(parseISO(a.data_hora.split('T')[0])));
   
@@ -110,10 +114,12 @@ const DoctorHome = () => {
       </div>
 
       {/* Próximo Paciente */}
-      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-6 relative min-w-full overflow-x-auto">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-6 relative min-w-full overflow-x-auto cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setSelectedPatientId(displayAppointments[0]?.id || 1)}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-foreground">Próximo Paciente</h2>
-          <button className="text-muted-foreground hover:text-foreground transition-colors">
+          <button 
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ChevronRight className="w-6 h-6" />
           </button>
         </div>
@@ -298,6 +304,15 @@ const DoctorHome = () => {
 
         </div>
       </div>
+
+      {/* Patient Record Modal */}
+      <Dialog open={!!selectedPatientId} onOpenChange={(open) => !open && setSelectedPatientId(null)}>
+        <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] flex flex-col p-0 overflow-hidden bg-background">
+          <div className="flex-1 overflow-y-auto p-0">
+            {selectedPatientId && <PatientRecord patient={patients.find(p => p.id === selectedPatientId) || patients[0]} />}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
