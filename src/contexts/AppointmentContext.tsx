@@ -146,7 +146,10 @@ export const AppointmentProvider = ({ children }: { children: ReactNode }) => {
   const unreadCount = notifications.filter(n => !n.read && n.type !== 'confirmation' && n.type !== 'new_file').length;
   const patientUnreadCount = notifications.filter(n => !n.read && n.type === 'confirmation').length;
   const patientFilesUnreadCount = notifications.filter(n => !n.read && n.type === 'new_file').length;
-  const pendingAppointmentsCount = appointments.filter(a => a.status === 'pendente').length;
+  const pendingAppointmentsCount = appointments.filter(a => {
+    const today = new Date().toISOString().split('T')[0];
+    return a.data_hora.startsWith(today) && ['pendente', 'confirmado'].includes(a.status);
+  }).length;
 
   return (
     <AppointmentContext.Provider value={{

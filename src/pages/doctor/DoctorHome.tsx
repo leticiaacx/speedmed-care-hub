@@ -22,10 +22,10 @@ const DoctorHome = () => {
   const todayAppointments = appointments.filter(a => isToday(parseISO(a.data_hora.split('T')[0])));
   
   // Use mock data if not enough upcoming appointments
-  const defaultUpcoming = [
-    { id: 1, patientName: 'Rogerio Silva', data_hora: '2025-01-30T10:00:00' },
-    { id: 2, patientName: 'Maria Alves', data_hora: '2025-01-30T13:00:00' },
-    { id: 3, patientName: 'Lorena Almeida', data_hora: '2025-01-30T14:00:00' },
+  const defaultUpcoming: any[] = [
+    { id: 1, usuario_id: 1, patientName: 'Rogerio Silva', data_hora: '2025-01-30T10:00:00' },
+    { id: 2, usuario_id: 2, patientName: 'Maria Alves', data_hora: '2025-01-30T13:00:00' },
+    { id: 3, usuario_id: 3, patientName: 'Lorena Almeida', data_hora: '2025-01-30T14:00:00' },
   ];
 
   const upcomingAppointments = appointments

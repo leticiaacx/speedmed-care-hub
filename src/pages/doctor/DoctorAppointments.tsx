@@ -114,7 +114,8 @@ const DoctorAppointments = () => {
                   <label className="text-xs font-medium text-slate-800">Data</label>
                   <div className="relative">
                     <Input 
-                        value={selectedDate ? format(selectedDate, 'dd/MM/yyyy') : format(currentMonth, 'dd/MM/yyyy')} 
+                        value={selectedDate ? format(selectedDate, 'dd/MM/yyyy') : ''} 
+                        placeholder="  /  /  "
                         readOnly 
                         className="h-9 w-[130px] sm:w-[150px] bg-white text-xs border border-slate-300 pr-8 text-slate-600 focus-visible:ring-0 shadow-sm"
                     />
@@ -176,7 +177,8 @@ const DoctorAppointments = () => {
                             <span className="font-bold block mb-1">Motivo da Consulta:</span>
                             <p className="leading-snug">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
                           </div>
-                          <div className="flex flex-wrap gap-3 justify-end mt-2">
+                          <div className="flex flex-wrap gap-3 justify-end mt-4 pt-4 border-t border-slate-100">
+                            <Button onClick={(e) => { e.stopPropagation(); setSelectedPatientId(appt.usuario_id); }} variant="outline" className="h-[34px] border-slate-300 text-slate-700 hover:bg-slate-50 text-[13px] px-6 font-medium shadow-sm transition-all rounded-md bg-white mr-auto">Ver Ficha</Button>
                             <Button onClick={(e) => { e.stopPropagation(); handleSetStatus(appt.id, 'realizado'); }} className="h-[34px] bg-[#12aef4] hover:bg-sky-500 text-white text-[13px] px-6 font-medium shadow-sm transition-all rounded-md">Finalizar</Button>
                             <Button onClick={(e) => { e.stopPropagation(); handleSetStatus(appt.id, 'cancelado'); }} variant="outline" className="h-[34px] border-[#12aef4] text-[#12aef4] hover:bg-sky-50 text-[13px] px-6 font-medium shadow-sm transition-all rounded-md bg-white">Cancelar</Button>
                             <Button onClick={(e) => { e.stopPropagation(); handleSetStatus(appt.id, 'falta'); }} className="h-[34px] bg-[#d32115] hover:bg-red-700 text-white text-[13px] px-6 font-medium shadow-sm transition-all rounded-md">Falta</Button>

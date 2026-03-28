@@ -122,8 +122,8 @@ const DoctorPatients = () => {
 
       <Dialog open={!!selectedPatient} onOpenChange={(open) => !open && setSelectedPatientId(null)}>
         <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] flex flex-col p-0 overflow-hidden bg-background">
-          <DialogHeader className="p-6 pb-0 shrink-0">
-            <DialogTitle className="text-2xl font-bold">Ficha do Paciente</DialogTitle>
+          <DialogHeader className="p-0 m-0 hidden shrink-0">
+            <DialogTitle></DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-6 pt-4">
             {selectedPatient && <PatientRecord patient={selectedPatient} />}
