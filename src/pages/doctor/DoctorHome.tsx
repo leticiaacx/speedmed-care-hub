@@ -135,15 +135,11 @@ const DoctorHome = () => {
           
           {/* Patient Profile */}
           <div className="flex-shrink-0 flex flex-col items-center xl:items-start w-48">
-            <div className="w-40 h-48 bg-slate-200 rounded-sm mb-4 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-                alt="Patient"
-                className="w-full h-full object-cover"
-              />
+            <div className="w-40 h-48 bg-slate-100 rounded-xl mb-4 flex items-center justify-center border border-slate-200">
+              <User className="w-20 h-20 text-slate-300" />
             </div>
-            <h3 className="text-xl font-medium text-foreground leading-tight">Rogerio Silva<br />Junior</h3>
-            <p className="text-sm text-muted-foreground mt-1">39 anos</p>
+            <h3 className="text-xl font-medium text-foreground leading-tight text-center xl:text-left">{nextPatientData?.nome || 'Paciente'}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{nextPatientData?.age ? `${nextPatientData.age} anos` : 'Idade não informada'}</p>
           </div>
 
           {/* Info and Calendar */}
@@ -152,7 +148,7 @@ const DoctorHome = () => {
               
               <div className="col-span-1">
                 <p className="text-sm font-medium text-foreground mb-1">Data de Nascimento:</p>
-                <p className="text-muted-foreground text-sm">13/10/1985</p>
+                <p className="text-muted-foreground text-sm">{nextPatientData?.age ? `01/01/${new Date().getFullYear() - nextPatientData.age}` : 'Não informada'}</p>
               </div>
 
               {/* Month/Year selector row */}

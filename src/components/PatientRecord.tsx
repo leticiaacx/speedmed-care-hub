@@ -588,26 +588,24 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
             <X className="w-8 h-8 text-red-500 hover:scale-110 transition-transform stroke-[2.5]" />
           </button>
           
-          <div className="pt-6 overflow-x-auto w-full pb-4 scrollbar-thin scrollbar-thumb-slate-200">
-            <div className="min-w-max">
-              {/* Months axis */}
-              <div className="flex text-sm text-slate-800 font-medium mb-3 ml-2 w-full justify-between pr-4">
-                {['Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.', 'Nov.', 'Dez.'].map(mon => (
-                  <div key={mon} className="text-left w-[42px]">{mon}</div>
+          <div className="pt-6 w-full pb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+                {['Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.', 'Nov.', 'Dez.'].map((month, mIdx) => (
+                  <div key={month} className="bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col">
+                    <h4 className="text-sm font-bold text-slate-700 mb-3 text-center border-b border-slate-200 pb-2">{month}</h4>
+                    <div className="flex flex-wrap gap-1.5 justify-center">
+                      {medicationGrid.slice(mIdx * 30, (mIdx + 1) * 30).map((day, i) => (
+                        <div 
+                          key={i} 
+                          title={`Dia ${i+1} de ${month}`}
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm transition-transform hover:scale-125 cursor-pointer ${
+                             day === 'green' ? 'bg-[#00ff22]' : day === 'yellow' ? 'bg-[#ffbc2c]' : 'bg-[#ff0000]'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
-              </div>
-              
-              {/* Grid */}
-              <div className="grid grid-rows-7 grid-flow-col gap-[3px]" style={{ gridAutoColumns: '14px', gridAutoRows: '14px' }}>
-                {medicationGrid.map((day, i) => (
-                   <div 
-                     key={i} 
-                     className={`w-[14px] h-[14px] rounded-[2px] shadow-sm ${
-                        day === 'green' ? 'bg-[#00ff22]' : day === 'yellow' ? 'bg-[#ffbc2c]' : 'bg-[#ff0000]'
-                     }`}
-                   />
-                ))}
-              </div>
             </div>
 
             {/* Legend */}
