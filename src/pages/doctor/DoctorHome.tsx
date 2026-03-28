@@ -2,8 +2,7 @@ import { ChevronRight, User, Clock, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { useUser, MEDICO } from '@/contexts/UserContext';
-import { format, parseISO, isToday, isFuture } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { parseISO, isToday, isFuture } from 'date-fns';
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import PatientRecord from '@/components/PatientRecord';
@@ -15,13 +14,12 @@ const DoctorHome = () => {
   const doctor = currentUser as MEDICO | null;
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
-  const nextAppt = appointments.filter(a => isFuture(parseISO(a.data_hora.split('T')[0]))).sort((a, b) => a.data_hora.localeCompare(b.data_hora))[0];
+  const nextAppt = appointments
+    .filter(a => isFuture(parseISO(a.data_hora.split('T')[0])))
+    .sort((a, b) => a.data_hora.localeCompare(b.data_hora))[0];
   const nextPatientId = nextAppt?.usuario_id || 1;
   const nextPatientData = patients?.find(p => p.id === nextPatientId) || patients?.[0];
 
-  const todayAppointments = appointments.filter(a => isToday(parseISO(a.data_hora.split('T')[0])));
-  
-  // Use mock data if not enough upcoming appointments
   const defaultUpcoming: any[] = [
     { id: 1, usuario_id: 1, patientName: 'Rogerio Silva', data_hora: '2025-01-30T10:00:00' },
     { id: 2, usuario_id: 2, patientName: 'Maria Alves', data_hora: '2025-01-30T13:00:00' },
@@ -45,33 +43,43 @@ const DoctorHome = () => {
 
   const totalStats = stats.reduce((acc, curr) => acc + curr.count, 0) || 17;
 
+  // birthDate: só ano disponível via age
+  const birthYear = nextPatientData?.age
+    ? new Date().getFullYear() - nextPatientData.age
+    : null;
+  const birthDate = birthYear ? `01/01/${birthYear}` : 'Não informada';
+
+  // Tratamentos: usa medications[] como fallback até treatments ser adicionado ao tipo
+  const medications: string[] = nextPatientData?.medications || [];
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Fila de Atendimento */}
+
+        {/* Agendamentos */}
         <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 relative">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Agendamentos</h2>
-              <p className="text-sm text-muted-foreground mt-1">Proximos atendimentos:</p>
+              <h2 className="text-lg font-light text-foreground">Agendamentos</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Próximos atendimentos</p>
             </div>
             <button
               onClick={() => navigate('/doctor/appointments')}
-              className="text-muted-foreground hover:text-foreground transition-colors absolute top-6 right-6"
+              className="text-muted-foreground hover:text-foreground transition-colors absolute top-5 right-5"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             {displayAppointments.map((appt) => (
-              <div key={appt.id} className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-slate-400 rounded-full flex items-center justify-center text-white flex-shrink-0 relative overflow-hidden">
-                  <User className="w-8 h-8 opacity-80" />
+              <div key={appt.id} className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-slate-400" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground text-lg leading-tight">{appt.patientName}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm font-light text-foreground leading-tight">{appt.patientName}</p>
+                  <p className="text-xs text-muted-foreground">
                     {appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0, 5) : '10:00'}
                   </p>
                 </div>
@@ -82,10 +90,9 @@ const DoctorHome = () => {
 
         {/* Estatísticas do Dia */}
         <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 flex flex-col">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-6">Estatísticas do Dia</h2>
+          <h2 className="text-lg font-light text-foreground mb-6">Estatísticas do Dia</h2>
 
-          {/* Progress Bar */}
-          <div className="flex h-3 w-full rounded-full overflow-hidden mb-8">
+          <div className="flex h-2 w-full rounded-full overflow-hidden mb-6">
             <div style={{ width: '12%', backgroundColor: '#e2e8f0' }}></div>
             <div style={{ width: '6%', backgroundColor: '#ef4444' }}></div>
             <div style={{ width: '0%', backgroundColor: '#facc15' }}></div>
@@ -93,23 +100,22 @@ const DoctorHome = () => {
             <div style={{ width: '35%', backgroundColor: '#22c55e' }}></div>
           </div>
 
-          {/* Stats List */}
           <div className="space-y-4 flex-1">
             {stats.map((stat, i) => (
-              <div key={i} className="flex justify-between items-center text-sm md:text-base">
-                <div className="flex items-center gap-4">
-                  <span className={`w-4 h-4 rounded-sm ${stat.color}`}></span>
-                  <span className="text-foreground">{stat.label}</span>
+              <div key={i} className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <span className={`w-3 h-3 rounded-sm ${stat.color}`}></span>
+                  <span className="text-sm font-light text-foreground">{stat.label}</span>
                 </div>
-                <span className="font-medium text-foreground">{stat.count}</span>
+                <span className="text-sm font-light text-foreground">{stat.count}</span>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 flex justify-end">
-            <div className="flex border border-sky-400 rounded-md overflow-hidden max-w-[240px] w-full">
-              <div className="flex-1 px-4 py-2 bg-white dark:bg-card text-foreground font-medium flex items-center">Total</div>
-              <div className="bg-sky-500 text-white px-8 py-2 font-medium flex items-center justify-center">
+          <div className="mt-6 flex justify-end">
+            <div className="flex border border-sky-400 rounded-md overflow-hidden max-w-[220px] w-full">
+              <div className="flex-1 px-4 py-1.5 bg-white dark:bg-card text-sm font-light text-foreground flex items-center">Total</div>
+              <div className="bg-sky-500 text-white px-8 py-1.5 text-sm font-light flex items-center justify-center">
                 {totalStats}
               </div>
             </div>
@@ -118,111 +124,115 @@ const DoctorHome = () => {
       </div>
 
       {/* Próximo Paciente */}
-      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 relative min-w-full overflow-x-auto transition-colors">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Próximo Paciente</h2>
-          <button 
-            className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-slate-100 rounded-lg cursor-pointer flex items-center gap-2 border border-transparent hover:border-slate-200"
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 relative overflow-x-auto">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-lg font-light text-foreground">Próximo Paciente</h2>
+          <button
+            className="text-xs font-light text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 p-1.5 rounded-md hover:bg-slate-100"
             onClick={() => setSelectedPatientId(displayAppointments[0]?.usuario_id || displayAppointments[0]?.id || 1)}
           >
-            Abrir
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Outer wrapper for mobile vs desktop */}
-        <div className="flex flex-col xl:flex-row gap-8 w-full">
-          
-          {/* Patient Profile */}
-          <div className="flex-shrink-0 flex flex-col items-center xl:items-start w-48">
-            <div className="w-40 h-48 bg-slate-100 rounded-xl mb-4 flex items-center justify-center border border-slate-200">
-              <User className="w-20 h-20 text-slate-300" />
+        <div className="flex flex-col xl:flex-row gap-6 w-full">
+
+          {/* Foto + nome */}
+          <div className="flex-shrink-0 flex flex-col items-center xl:items-start w-36">
+            <div className="w-32 h-40 bg-slate-100 rounded-xl mb-3 flex items-center justify-center border border-slate-200 overflow-hidden">
+              <User className="w-14 h-14 text-slate-300" />
             </div>
-            <h3 className="text-xl font-medium text-foreground leading-tight text-center xl:text-left">{nextPatientData?.nome || 'Paciente'}</h3>
-            <p className="text-sm text-muted-foreground mt-1">{nextPatientData?.age ? `${nextPatientData.age} anos` : 'Idade não informada'}</p>
+            <p className="text-sm font-light text-foreground leading-tight text-center xl:text-left">
+              {nextPatientData?.nome || 'Paciente'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {nextPatientData?.age ? `${nextPatientData.age} anos` : 'Idade não informada'}
+            </p>
           </div>
 
-          {/* Info and Calendar */}
-          <div className="flex-[1.5] flex flex-col justify-between">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-6 max-w-[500px]">
-              
+          {/* Infos + Calendário */}
+          <div className="flex-[1.5]">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 max-w-[500px]">
+
+              {/* Data de Nascimento */}
               <div className="col-span-1">
-                <p className="text-sm font-medium text-foreground mb-1">Data de Nascimento:</p>
-                <p className="text-muted-foreground text-sm">{nextPatientData?.age ? `01/01/${new Date().getFullYear() - nextPatientData.age}` : 'Não informada'}</p>
+                <p className="text-xs text-muted-foreground mb-1">Data de Nascimento:</p>
+                <p className="text-sm font-light text-foreground">{birthDate}</p>
               </div>
 
-              {/* Month/Year selector row */}
-              <div className="col-span-1 flex justify-center xl:justify-start items-center gap-2">
-                <select className="bg-transparent text-sm font-bold outline-none text-foreground appearance-none cursor-pointer">
+              {/* Seletor mês/ano do calendário */}
+              <div className="col-span-1 flex items-center gap-1">
+                <select className="bg-transparent text-sm font-light outline-none text-foreground cursor-pointer">
                   <option>Janeiro</option>
+                  <option>Fevereiro</option>
+                  <option>Março</option>
+                  <option>Abril</option>
+                  <option>Maio</option>
+                  <option>Junho</option>
+                  <option>Julho</option>
+                  <option>Agosto</option>
+                  <option>Setembro</option>
+                  <option>Outubro</option>
+                  <option>Novembro</option>
+                  <option>Dezembro</option>
                 </select>
-                <ChevronRight className="w-4 h-4 text-foreground/50 rotate-90" />
-                <select className="bg-transparent text-sm font-bold outline-none text-foreground appearance-none cursor-pointer">
+                <ChevronRight className="w-3 h-3 text-foreground/40 rotate-90 flex-shrink-0" />
+                <select className="bg-transparent text-sm font-light outline-none text-foreground cursor-pointer ml-2">
                   <option>2025</option>
+                  <option>2026</option>
                 </select>
-                <ChevronRight className="w-4 h-4 text-foreground/50 rotate-90" />
+                <ChevronRight className="w-3 h-3 text-foreground/40 rotate-90 flex-shrink-0" />
               </div>
 
+              {/* Alergia */}
               <div className="col-span-1">
-                <p className="text-sm font-medium text-foreground mb-1">Alergia: (Opcional)</p>
-                <p className="text-muted-foreground text-sm">{nextPatientData?.allergies?.length ? nextPatientData.allergies.join(', ') : 'Nenhuma'}</p>
+                <p className="text-xs text-muted-foreground mb-1">Alergia: (Opcional)</p>
+                <p className="text-sm font-light text-foreground">
+                  {nextPatientData?.allergies?.length
+                    ? nextPatientData.allergies.join(', ')
+                    : 'Ex: Dipirona, poeira'}
+                </p>
               </div>
 
-              {/* Visual Calendar - take remaining rows in this half */}
-              <div className="col-span-1 row-span-3 flex justify-center xl:justify-start">
-                <div className="grid grid-cols-7 gap-y-2 gap-x-1 text-center text-xs w-full max-w-[240px]">
-                  {/* Days header */}
+              {/* Calendário */}
+              <div className="col-span-1 row-span-3">
+                <div className="grid grid-cols-7 gap-y-1 gap-x-0.5 text-center w-full max-w-[210px]">
                   {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(d => (
-                    <div key={d} className="font-semibold text-foreground text-[10px] mb-1">{d}</div>
+                    <div key={d} className="text-[9px] font-light text-muted-foreground mb-0.5">{d}</div>
                   ))}
-
-                  {/* Calendar Days */}
-                  <div className="text-muted-foreground/50 flex items-center justify-center h-6">30</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">1</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">2</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">3</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">4</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">5</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">6</div>
-
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">7</div>
-                  <div className="bg-orange-400 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">8</div>
-                  <div className="bg-orange-400 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">9</div>
-                  <div className="bg-orange-400 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">10</div>
-                  <div className="bg-orange-400 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">11</div>
-                  <div className="bg-orange-400 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">12</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">13</div>
-
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">14</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">15</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">16</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">17</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">18</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">19</div>
-                  <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">20</div>
-
-                  <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">21</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">22</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">23</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">24</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">25</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">26</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">27</div>
-
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">28</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">29</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">30</div>
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center mx-auto">31</div>
-                  <div className="text-muted-foreground/50 flex items-center justify-center h-6">1</div>
-                  <div className="text-muted-foreground/50 flex items-center justify-center h-6">2</div>
-                  <div className="text-muted-foreground/50 flex items-center justify-center h-6">3</div>
+                  <div className="text-[10px] text-muted-foreground/40 flex items-center justify-center h-5">30</div>
+                  {[1, 2, 3, 4, 5, 6].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
+                  {[7].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
+                  {[8, 9, 10, 11, 12].map(d => <div key={d} className="bg-orange-400 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
+                  {[13, 14, 15, 16, 17, 18, 19].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
+                  {[20, 21].map(d => <div key={d} className="bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
+                  {[22, 23, 24, 25, 26, 27, 28, 29, 30, 31].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
+                  {[1, 2, 3].map(d => <div key={`next-${d}`} className="text-[10px] text-muted-foreground/40 flex items-center justify-center h-5">{d}</div>)}
                 </div>
               </div>
 
-              <div className="col-span-1 mt-6">
-                <p className="text-sm font-medium text-foreground mb-2">Cuidador ou Responsável:</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-foreground font-semibold px-3 py-1 bg-slate-100 rounded border border-slate-200">{nextPatientData?.requiresCompanion ? 'Sim, possui' : 'Não possui'}</p>
+              {/* Cuidador — checkbox estilo referência */}
+              <div className="col-span-1">
+                <p className="text-xs text-muted-foreground mb-1">Cuidador ou Responsável:</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <label className="flex items-center gap-1.5 cursor-pointer text-sm font-light text-foreground">
+                    <input
+                      type="checkbox"
+                      readOnly
+                      checked={!!nextPatientData?.requiresCompanion}
+                      className="w-3.5 h-3.5 accent-sky-500"
+                    />
+                    Tem
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-sm font-light text-foreground">
+                    <input
+                      type="checkbox"
+                      readOnly
+                      checked={!nextPatientData?.requiresCompanion}
+                      className="w-3.5 h-3.5 accent-sky-500"
+                    />
+                    Não Tem
+                  </label>
                 </div>
               </div>
 
@@ -230,83 +240,45 @@ const DoctorHome = () => {
           </div>
 
           {/* Tratamentos */}
-          <div className="flex-1 min-w-[320px] max-w-sm mt-8 xl:mt-0">
-            <p className="text-base text-foreground mb-3">Tratamentos:</p>
-            <div className="space-y-4">
-              {/* Treatment Card 1 */}
-              <div className="border border-[#7dd3fc] dark:border-sky-800 rounded-lg p-3 bg-white dark:bg-card">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-foreground text-sm border-b border-[#bae6fd] dark:border-sky-900 pb-2 w-full relative">
-                    Tratamento de dores fortes de cabeça
-                    <div className="absolute top-0 right-0 -mt-0.5 flex items-center gap-1 text-[10px] font-bold text-foreground">
-                      <Clock className="w-3 h-3 text-sky-500 fill-sky-500" /> Falta 10 dias
-                    </div>
+          <div className="flex-1 min-w-[260px] max-w-sm mt-4 xl:mt-0">
+            <p className="text-xs text-muted-foreground mb-2">Tratamentos:</p>
+            <div className="space-y-3">
+              {medications.length > 0 ? (
+                // Agrupa medications em um card único enquanto treatments não existe no tipo
+                <div className="border border-[#7dd3fc] dark:border-sky-800 rounded-lg p-3 bg-white dark:bg-card">
+                  <h4 className="text-xs font-light text-foreground border-b border-[#bae6fd] dark:border-sky-900 pb-2 mb-2 relative pr-24">
+                    Medicamentos em uso
+                    <span className="absolute top-0 right-0 flex items-center gap-1 text-[10px] font-light text-sky-600">
+                      <Clock className="w-3 h-3 fill-sky-500 text-sky-500" /> Em andamento
+                    </span>
                   </h4>
-                </div>
-                <div className="space-y-2 mt-3">
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-2 font-medium text-foreground">
-                      <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-                        <Pill className="w-2.5 h-2.5 text-red-600 fill-red-600" />
+                  <div className="space-y-1.5">
+                    {medications.map((med: string, j: number) => (
+                      <div key={j} className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                          <Pill className="w-2.5 h-2.5 text-red-600 fill-red-600" />
+                        </div>
+                        <span className="text-xs font-light text-foreground">{med}</span>
                       </div>
-                      Dipirona/1G
-                    </div>
-                    <div className="text-muted-foreground text-[10px] whitespace-nowrap">Inicio dia 1 de Janeiro</div>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-2 font-medium text-foreground">
-                      <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-                        <Pill className="w-2.5 h-2.5 text-red-600 fill-red-600" />
-                      </div>
-                      Azitromicina/100Mg
-                    </div>
-                    <div className="text-muted-foreground text-[10px] whitespace-nowrap">Inicio dia 2 de Janeiro</div>
+                    ))}
                   </div>
                 </div>
-              </div>
-
-              {/* Treatment Card 2 */}
-              <div className="border border-[#7dd3fc] dark:border-sky-800 rounded-lg p-3 bg-white dark:bg-card">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-foreground text-sm border-b border-[#bae6fd] dark:border-sky-900 pb-2 w-full relative">
-                    Tratamento de dores fortes de cabeça
-                    <div className="absolute top-0 right-0 -mt-0.5 flex items-center gap-1 text-[10px] font-bold text-foreground">
-                      <Clock className="w-3 h-3 text-sky-500 fill-sky-500" /> Falta 10 dias
-                    </div>
-                  </h4>
-                </div>
-                <div className="space-y-2 mt-3">
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-2 font-medium text-foreground">
-                      <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-                        <Pill className="w-2.5 h-2.5 text-red-600 fill-red-600" />
-                      </div>
-                      Dipirona/1G
-                    </div>
-                    <div className="text-muted-foreground text-[10px] whitespace-nowrap">Inicio dia 1 de Janeiro</div>
-                  </div>
-                  <div className="flex justify-between items-center text-xs">
-                    <div className="flex items-center gap-2 font-medium text-foreground">
-                      <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-                        <Pill className="w-2.5 h-2.5 text-red-600 fill-red-600" />
-                      </div>
-                      Azitromicina/100Mg
-                    </div>
-                    <div className="text-muted-foreground text-[10px] whitespace-nowrap">Inicio dia 2 de Janeiro</div>
-                  </div>
-                </div>
-              </div>
+              ) : (
+                <p className="text-xs font-light text-muted-foreground">Nenhum tratamento registrado.</p>
+              )}
             </div>
           </div>
 
         </div>
       </div>
 
-      {/* Patient Record Modal */}
+      {/* Modal Ficha do Paciente */}
       <Dialog open={!!selectedPatientId} onOpenChange={(open) => !open && setSelectedPatientId(null)}>
         <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] flex flex-col p-0 overflow-hidden bg-background">
           <div className="flex-1 overflow-y-auto p-0">
-            {selectedPatientId && <PatientRecord patient={patients.find(p => p.id === selectedPatientId) || patients[0]} />}
+            {selectedPatientId && (
+              <PatientRecord patient={patients.find(p => p.id === selectedPatientId) || patients[0]} />
+            )}
           </div>
         </DialogContent>
       </Dialog>
