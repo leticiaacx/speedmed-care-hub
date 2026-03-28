@@ -410,12 +410,19 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
            {/* Photo Section */}
            <div className="w-full md:w-[300px] shrink-0 bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex flex-col justify-start">
               <div className="w-full bg-slate-100 rounded overflow-hidden flex items-center justify-center relative aspect-[3/4] mb-4 border border-slate-200 shadow-sm">
-                 <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Patient" className="w-full h-full object-cover" />
-                 {isEditing && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Button variant="secondary" size="sm" className="rounded-full shadow-md text-xs h-8 font-medium">Alterar Foto</Button>
-                    </div>
-                 )}
+               {editedPatient.photo ? (
+                 <img src={editedPatient.photo} alt={editedPatient.nome} className="w-full h-full object-cover" />
+               ) : (
+                 <div className="flex flex-col items-center justify-center w-full h-full text-slate-400 bg-slate-50">
+                    <UserIconLucide className="w-24 h-24 mb-3 opacity-30" />
+                    <span className="text-xs font-medium opacity-50">Sem foto de perfil</span>
+                 </div>
+               )}
+               {isEditing && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <Button variant="secondary" size="sm" className="rounded-full shadow-md text-xs h-8 font-medium cursor-pointer">Adicionar Foto</Button>
+                  </div>
+               )}
               </div>
               <div className="text-center">
                 <h3 className="text-base font-bold text-slate-800 leading-tight">{editedPatient.nome}</h3>
