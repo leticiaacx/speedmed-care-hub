@@ -156,11 +156,11 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
   return (
     <div className="bg-[#f1f5f9] min-h-full font-sans w-full rounded-xl overflow-hidden shadow-sm border border-slate-200">
       {/* Blue Header like Figma */}
-      <div className="bg-[#0ea5e9] px-6 py-4 text-white flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+      <div className="bg-[#0ea5e9] px-6 py-4 pr-12 text-white flex flex-col md:flex-row md:justify-between md:items-center gap-4 relative">
         <h1 className="text-xl md:text-2xl font-semibold">Relatório Médico</h1>
         
         {!isReadOnly && (
-          <div className="flex flex-wrap gap-2 md:gap-3">
+          <div className="flex flex-wrap gap-2 md:gap-3 md:pr-4">
             {onConcludeAppointment && (
               <Button onClick={() => {
                 onConcludeAppointment();
@@ -588,28 +588,30 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
             <X className="w-8 h-8 text-red-500 hover:scale-110 transition-transform stroke-[2.5]" />
           </button>
           
-          <div className="pt-6">
-            {/* Months axis */}
-            <div className="flex text-sm text-slate-800 font-medium mb-3 ml-2">
-              {['Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.', 'Nov.', 'Dez.'].map(mon => (
-                <div key={mon} className="flex-1">{mon}</div>
-              ))}
-            </div>
-            
-            {/* Grid */}
-            <div className="grid grid-rows-7 grid-flow-col gap-1" style={{ gridAutoColumns: '1fr' }}>
-              {medicationGrid.map((day, i) => (
-                 <div 
-                   key={i} 
-                   className={`w-full aspect-square rounded-[1px] shadow-sm ${
-                      day === 'green' ? 'bg-[#00ff22]' : day === 'yellow' ? 'bg-[#ffbc2c]' : 'bg-[#ff0000]'
-                   }`}
-                 />
-              ))}
+          <div className="pt-6 overflow-x-auto w-full pb-4 scrollbar-thin scrollbar-thumb-slate-200">
+            <div className="min-w-max">
+              {/* Months axis */}
+              <div className="flex text-sm text-slate-800 font-medium mb-3 ml-2 w-full justify-between pr-4">
+                {['Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.', 'Nov.', 'Dez.'].map(mon => (
+                  <div key={mon} className="text-left w-[42px]">{mon}</div>
+                ))}
+              </div>
+              
+              {/* Grid */}
+              <div className="grid grid-rows-7 grid-flow-col gap-[3px]" style={{ gridAutoColumns: '14px', gridAutoRows: '14px' }}>
+                {medicationGrid.map((day, i) => (
+                   <div 
+                     key={i} 
+                     className={`w-[14px] h-[14px] rounded-[2px] shadow-sm ${
+                        day === 'green' ? 'bg-[#00ff22]' : day === 'yellow' ? 'bg-[#ffbc2c]' : 'bg-[#ff0000]'
+                     }`}
+                   />
+                ))}
+              </div>
             </div>
 
             {/* Legend */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mt-10 font-medium text-slate-800 text-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4 sm:gap-8 mt-10 font-medium text-slate-800 text-sm">
                <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-[#00ff22] rounded-sm shadow-sm" /> 
                   Tomou todos os remédios.

@@ -15,6 +15,10 @@ const DoctorHome = () => {
   const doctor = currentUser as MEDICO | null;
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
+  const nextAppt = appointments.filter(a => isFuture(parseISO(a.data_hora.split('T')[0]))).sort((a, b) => a.data_hora.localeCompare(b.data_hora))[0];
+  const nextPatientId = nextAppt?.usuario_id || 1;
+  const nextPatientData = patients?.find(p => p.id === nextPatientId) || patients?.[0];
+
   const todayAppointments = appointments.filter(a => isToday(parseISO(a.data_hora.split('T')[0])));
   
   // Use mock data if not enough upcoming appointments
@@ -45,10 +49,10 @@ const DoctorHome = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Fila de Atendimento */}
-        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-6 relative">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 relative">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">Fila de Atendimento</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Agendamentos</h2>
               <p className="text-sm text-muted-foreground mt-1">Proximos atendimentos:</p>
             </div>
             <button
@@ -77,8 +81,8 @@ const DoctorHome = () => {
         </div>
 
         {/* Estatísticas do Dia */}
-        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-6 flex flex-col">
-          <h2 className="text-2xl font-bold text-foreground mb-6">Estatísticas do Dia</h2>
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 flex flex-col">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-6">Estatísticas do Dia</h2>
 
           {/* Progress Bar */}
           <div className="flex h-3 w-full rounded-full overflow-hidden mb-8">
@@ -114,13 +118,15 @@ const DoctorHome = () => {
       </div>
 
       {/* Próximo Paciente */}
-      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-6 relative min-w-full overflow-x-auto cursor-pointer hover:border-primary/50 transition-colors" onClick={() => setSelectedPatientId(displayAppointments[0]?.id || 1)}>
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 relative min-w-full overflow-x-auto transition-colors">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-foreground">Próximo Paciente</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground">Próximo Paciente</h2>
           <button 
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-slate-100 rounded-lg cursor-pointer flex items-center gap-2 border border-transparent hover:border-slate-200"
+            onClick={() => setSelectedPatientId(displayAppointments[0]?.usuario_id || displayAppointments[0]?.id || 1)}
           >
-            <ChevronRight className="w-6 h-6" />
+            Abrir
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
@@ -163,7 +169,7 @@ const DoctorHome = () => {
 
               <div className="col-span-1">
                 <p className="text-sm font-medium text-foreground mb-1">Alergia: (Opcional)</p>
-                <p className="text-muted-foreground text-sm">Ex: Dipirona, poeira</p>
+                <p className="text-muted-foreground text-sm">{nextPatientData?.allergies?.length ? nextPatientData.allergies.join(', ') : 'Nenhuma'}</p>
               </div>
 
               {/* Visual Calendar - take remaining rows in this half */}
@@ -219,13 +225,8 @@ const DoctorHome = () => {
 
               <div className="col-span-1 mt-6">
                 <p className="text-sm font-medium text-foreground mb-2">Cuidador ou Responsável:</p>
-                <div className="flex items-center gap-6">
-                  <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                    <input type="checkbox" className="w-[18px] h-[18px] rounded-sm text-foreground bg-transparent border-foreground/30 checked:bg-foreground checked:border-foreground focus:ring-foreground accent-foreground" defaultChecked /> Tem
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                    <input type="checkbox" className="w-[18px] h-[18px] rounded-sm text-foreground bg-transparent border-foreground/30 focus:ring-foreground" /> Não Tem
-                  </label>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-foreground font-semibold px-3 py-1 bg-slate-100 rounded border border-slate-200">{nextPatientData?.requiresCompanion ? 'Sim, possui' : 'Não possui'}</p>
                 </div>
               </div>
 
