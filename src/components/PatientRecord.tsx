@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar, Clock, MapPin, Phone, Mail, Droplets, AlertTriangle, Pill, Edit, Save, X, FileText, CheckCircle, ChevronDown, ChevronUp, Upload, User as UserIconLucide, Calendar as CalendarIcon2 } from 'lucide-react';
 import { USUARIO } from '@/data/mockData';
 import { format, parseISO } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { useUser } from '@/contexts/UserContext';
@@ -17,6 +18,7 @@ interface PatientRecordProps {
 const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [expandedConsultation, setExpandedConsultation] = useState<number | null>(null);
+  const [isMedicationCalendarOpen, setIsMedicationCalendarOpen] = useState(false);
   
   // Extend editedPatient to hold the new fields from the Figma for the UI state
   const [editedPatient, setEditedPatient] = useState<any>({
@@ -137,6 +139,19 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
       }
     });
   };
+
+  const medicationGrid = useMemo(() => {
+    const days = [];
+    // seeded random-like loop for deterministic mock data
+    for (let i = 0; i < 364; i++) {
+        const rand = (Math.sin(i + patient.id) * 10000) - Math.floor(Math.sin(i + patient.id) * 10000);
+        let status = 'green';
+        if (rand > 0.95) status = 'red';
+        else if (rand > 0.85) status = 'yellow';
+        days.push(status);
+    }
+    return days;
+  }, [patient.id]);
 
   return (
     <div className="bg-[#f1f5f9] min-h-full font-sans w-full rounded-xl overflow-hidden shadow-sm border border-slate-200">
@@ -332,7 +347,7 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
                      <div className="h-9 px-3 rounded-md border border-[#0ea5e9] flex items-center text-xs text-slate-700 bg-white">{editedPatient.dataAbertura}</div>
                    )}
                  </div>
-                 <button className="h-9 px-4 bg-[#0ea5e9] hover:bg-sky-600 text-white rounded-md flex items-center justify-center gap-2 text-[12px] whitespace-nowrap transition-colors shadow-sm shrink-0 font-medium">
+                 <button onClick={() => setIsMedicationCalendarOpen(true)} className="h-9 px-4 bg-[#0ea5e9] hover:bg-sky-600 text-white rounded-md flex items-center justify-center gap-2 text-[12px] whitespace-nowrap transition-colors shadow-sm shrink-0 font-medium">
                    Calendário de Medicação <CalendarIcon2 className="w-4 h-4 ml-1" />
                  </button>
                </div>
@@ -565,6 +580,52 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
         )}
 
       </div>
+
+      {/* Medication Calendar Modal */}
+      <Dialog open={isMedicationCalendarOpen} onOpenChange={setIsMedicationCalendarOpen}>
+        <DialogContent className="max-w-4xl bg-white p-6 md:p-10 rounded-xl border-none shadow-2xl relative [&>button]:hidden sm:[&>button]:block">
+          <button onClick={() => setIsMedicationCalendarOpen(false)} className="absolute top-4 right-4 z-50">
+            <X className="w-8 h-8 text-red-500 hover:scale-110 transition-transform stroke-[2.5]" />
+          </button>
+          
+          <div className="pt-6">
+            {/* Months axis */}
+            <div className="flex text-sm text-slate-800 font-medium mb-3 ml-2">
+              {['Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.', 'Nov.', 'Dez.'].map(mon => (
+                <div key={mon} className="flex-1">{mon}</div>
+              ))}
+            </div>
+            
+            {/* Grid */}
+            <div className="grid grid-rows-7 grid-flow-col gap-1" style={{ gridAutoColumns: '1fr' }}>
+              {medicationGrid.map((day, i) => (
+                 <div 
+                   key={i} 
+                   className={`w-full aspect-square rounded-[1px] shadow-sm ${
+                      day === 'green' ? 'bg-[#00ff22]' : day === 'yellow' ? 'bg-[#ffbc2c]' : 'bg-[#ff0000]'
+                   }`}
+                 />
+              ))}
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mt-10 font-medium text-slate-800 text-sm">
+               <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-[#00ff22] rounded-sm shadow-sm" /> 
+                  Tomou todos os remédios.
+               </div>
+               <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-[#ffbc2c] rounded-sm shadow-sm" /> 
+                  Deixou de tomar algum remédio
+               </div>
+               <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-[#ff0000] rounded-sm shadow-sm" /> 
+                  Não tomou nenhum remédio
+               </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

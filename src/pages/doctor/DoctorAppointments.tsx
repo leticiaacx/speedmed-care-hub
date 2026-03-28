@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye, Plus, Check, X, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye, Plus, Check, X, AlertTriangle, ChevronDown, User, BarChart2 } from 'lucide-react';
 import { mockPatients } from '@/data/mockData';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, isFuture } from 'date-fns';
@@ -42,23 +42,33 @@ const DoctorAppointments = () => {
 
   const selectedAppt = selectedApptId ? appointments.find(a => a.id === selectedApptId) : null;
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Acompanhamento de Agendamentos</h1>
-      </div>
+  const [localStatuses, setLocalStatuses] = useState<Record<number, string>>({});
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar */}
-        <div className="speedmed-card">
+  const getStatus = (id: number, orig: string) => localStatuses[id] || orig;
+  
+  const handleSetStatus = (id: number, status: string) => {
+    setLocalStatuses(prev => ({...prev, [id]: status}));
+    setExpandedId(null);
+  };
+
+  const pendentes = filteredAppointments.filter(a => ['pendente', 'confirmado'].includes(getStatus(a.id, a.status)));
+  const realizados = filteredAppointments.filter(a => getStatus(a.id, a.status) === 'realizado');
+  const faltas = filteredAppointments.filter(a => ['falta', 'cancelado'].includes(getStatus(a.id, a.status)));
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Calendar (Left Side) */}
+        <div className="speedmed-card bg-white border border-slate-200">
           <div className="flex items-center justify-between mb-4">
-            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary"><ChevronLeft className="w-5 h-5 text-foreground" /></button>
-            <h2 className="text-base font-semibold text-foreground capitalize">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</h2>
-            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-secondary"><ChevronRight className="w-5 h-5 text-foreground" /></button>
+            <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-slate-100"><ChevronLeft className="w-5 h-5 text-slate-800" /></button>
+            <h2 className="text-base font-semibold text-slate-800 capitalize">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</h2>
+            <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 rounded-lg hover:bg-slate-100"><ChevronRight className="w-5 h-5 text-slate-800" /></button>
           </div>
           <div className="grid grid-cols-7 gap-1 mb-1">
             {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
-              <div key={i} className="text-center text-xs font-medium text-muted-foreground py-1">{day}</div>
+              <div key={i} className="text-center text-xs font-semibold text-slate-400 py-1">{day}</div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -71,136 +81,171 @@ const DoctorAppointments = () => {
                 <button
                   key={day.toISOString()}
                   onClick={() => setSelectedDate(isSelected ? null : day)}
-                  className={`relative p-1.5 rounded-lg text-sm transition-all aspect-square flex items-center justify-center ${isSelected ? 'bg-primary text-primary-foreground font-bold' :
-                    isToday ? 'bg-accent text-accent-foreground font-semibold' :
-                      'hover:bg-secondary text-foreground'
+                  className={`relative p-1.5 rounded-lg text-sm transition-all aspect-square flex items-center justify-center ${isSelected ? 'bg-sky-500 text-white font-bold shadow-md' :
+                    isToday ? 'bg-sky-50 text-sky-600 font-semibold' :
+                      'hover:bg-slate-100 text-slate-700 font-medium'
                     }`}
                 >
                   {format(day, 'd')}
                   {dayAppts.length > 0 && (
-                    <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSelected ? 'bg-primary-foreground' : 'bg-primary'}`} />
+                    <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-[#0ea5e9]'}`} />
                   )}
                 </button>
               );
             })}
           </div>
           {selectedDate && (
-            <button onClick={() => setSelectedDate(null)} className="mt-3 text-xs text-primary font-medium hover:underline">Ver todo o mês</button>
+            <button onClick={() => setSelectedDate(null)} className="mt-4 text-xs text-[#0ea5e9] font-medium hover:underline block text-center w-full">Ver Padrão / Todo o mês</button>
           )}
         </div>
 
-        {/* Appointments list */}
-        <div className="lg:col-span-2 space-y-3">
-          <h2 className="text-lg font-semibold text-foreground">
-            {selectedDate ? `Agendamentos - ${format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}` : `Agendamentos de ${format(currentMonth, 'MMMM', { locale: ptBR })}`}
-          </h2>
-          {filteredAppointments.length === 0 ? (
-            <div className="speedmed-card text-center py-8">
-              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Nenhum agendamento encontrado</p>
-            </div>
-          ) : (
-            filteredAppointments.map(appt => (
-              <div key={appt.id} className="speedmed-card">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-                      <span className="text-accent-foreground font-semibold text-sm">{appt.patientName.split(' ').map(n => n[0]).join('')}</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{appt.patientName}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        <span>{format(parseISO(appt.data_hora.split('T')[0]), 'dd/MM/yyyy')}</span>
-                        <span>•</span>
-                        <span>{appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}</span>
-                        <span>•</span>
-                        <span>{appt.type}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{appt.location}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-3 sm:mt-0 w-full sm:w-auto border-t sm:border-none border-border pt-3 sm:pt-0">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[appt.status]}`}>
-                      {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
-                    </span>
-                    {appt.status === 'pendente' && (
-                      <span className="text-xs text-muted-foreground mr-auto sm:mr-0 pl-1">Aguardando Clínica</span>
-                    )}
-                    <button
-                      onClick={() => setSelectedApptId(appt.id)}
-                      className="ml-auto sm:ml-2 flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg hover:bg-secondary border border-border bg-card text-sm font-medium transition-colors"
-                      title="Ver Detalhes"
-                    >
-                      <Eye className="w-4 h-4 text-primary" />
-                      <span className="text-foreground">Detalhes</span>
-                    </button>
+        {/* Fila de Atendimento List (Right Side) */}
+        <div className="lg:col-span-2">
+          {/* Fila Header */}
+          <div className="bg-[#12aef4] rounded-t-lg px-6 py-4 shadow-sm shadow-[#12aef4]/20 border border-[#12aef4]">
+            <h1 className="text-[22px] font-semibold text-white tracking-wide">Fila de Atendimento</h1>
+          </div>
+          
+          <div className="bg-[#f2f2f2] p-4 sm:p-6 rounded-b-lg border border-t-0 border-slate-200">
+            {/* Filter Row */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
+              <div className="flex gap-4 w-full sm:w-auto">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-800">Data</label>
+                  <div className="relative">
+                    <Input 
+                        value={selectedDate ? format(selectedDate, 'dd/MM/yyyy') : format(currentMonth, 'dd/MM/yyyy')} 
+                        readOnly 
+                        className="h-9 w-[130px] sm:w-[150px] bg-white text-xs border border-slate-300 pr-8 text-slate-600 focus-visible:ring-0 shadow-sm"
+                    />
+                    <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" />
                   </div>
                 </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-800">Ordem</label>
+                  <Select defaultValue="crescente">
+                    <SelectTrigger className="h-9 w-[130px] sm:w-[150px] bg-white text-xs border-slate-300 text-slate-600 focus:ring-0 shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="crescente">Crescente</SelectItem>
+                      <SelectItem value="decrescente">Decrescente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            ))
-          )}
+              
+              <Button className="h-9 px-6 bg-[#12aef4] hover:bg-sky-500 text-white rounded gap-3 text-[13px] font-medium shadow-none mt-2 sm:mt-0 active:scale-95 transition-transform w-full sm:w-auto">
+                Estatísticas <BarChart2 className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Fila Acordeão List */}
+            <div className="bg-white border-x border-t border-slate-300 rounded divide-y divide-slate-300 shadow-sm mb-8 w-[98%] max-w-full">
+              {pendentes.length === 0 ? (
+                <div className="p-6 text-center text-sm text-slate-500 font-medium">Nenhum paciente na fila.</div>
+              ) : (
+                pendentes.map(appt => {
+                  const isExpanded = expandedId === appt.id;
+                  return (
+                    <div key={appt.id} className="flex flex-col bg-white overflow-hidden first:rounded-t last:rounded-b">
+                      <div 
+                        className={`flex items-center justify-between p-4 px-5 select-none cursor-pointer hover:bg-[#fafafa] transition-colors`}
+                        onClick={() => setExpandedId(isExpanded ? null : appt.id)}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-[46px] h-[46px] rounded-full bg-[#998b88] flex items-center justify-center text-white font-medium shadow-none shrink-0 border-[3px] border-white ring-1 ring-slate-200">
+                            <User className="w-6 h-6 text-white" />
+                          </div>
+                          <div className="flex flex-col">
+                            <h3 className="text-sm font-semibold text-slate-800 tracking-tight">{appt.patientName}</h3>
+                            <p className="text-[13px] text-slate-500 block leading-tight">{appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}</p>
+                          </div>
+                        </div>
+                        <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                      </div>
+                      
+                      {/* Expansion content */}
+                      {isExpanded && (
+                        <div className="px-5 pb-5 pt-0 ml-[4.5rem]">
+                          <div className="flex gap-4 text-[13px] font-bold text-slate-900 mb-4 tracking-tight">
+                            <span>Idade: 24</span>
+                            <span>Tipo Sanguíneo: A+</span>
+                          </div>
+                          <div className="text-[13px] text-slate-900 mb-6">
+                            <span className="font-bold block mb-1">Motivo da Consulta:</span>
+                            <p className="leading-snug">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                          </div>
+                          <div className="flex flex-wrap gap-3 justify-end mt-2">
+                            <Button onClick={(e) => { e.stopPropagation(); handleSetStatus(appt.id, 'realizado'); }} className="h-[34px] bg-[#12aef4] hover:bg-sky-500 text-white text-[13px] px-6 font-medium shadow-sm transition-all rounded-md">Finalizar</Button>
+                            <Button onClick={(e) => { e.stopPropagation(); handleSetStatus(appt.id, 'cancelado'); }} variant="outline" className="h-[34px] border-[#12aef4] text-[#12aef4] hover:bg-sky-50 text-[13px] px-6 font-medium shadow-sm transition-all rounded-md bg-white">Cancelar</Button>
+                            <Button onClick={(e) => { e.stopPropagation(); handleSetStatus(appt.id, 'falta'); }} className="h-[34px] bg-[#d32115] hover:bg-red-700 text-white text-[13px] px-6 font-medium shadow-sm transition-all rounded-md">Falta</Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            {/* Bottom Sections: Atendidos / Faltas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-[98%]">
+              {/* Atendidos */}
+              <div className="bg-white rounded border border-slate-300 shadow-sm overflow-hidden flex flex-col h-[320px]">
+                  <div className="px-6 py-5">
+                    <h2 className="text-[22px] font-bold text-black border-none tracking-tight">Atendidos no dia</h2>
+                  </div>
+                  <div className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-slate-200">
+                    <div className="space-y-0 divide-y divide-slate-300/60">
+                      {realizados.length === 0 ? <p className="text-sm text-slate-500 py-4 text-center">Nenhum atendimento finalizado</p> : realizados.map(appt => (
+                        <div key={appt.id} className="flex items-center gap-4 py-4 first:pt-0 border-b border-slate-300">
+                            <div className="w-[44px] h-[44px] rounded-full bg-[#998b88] flex items-center justify-center text-white shrink-0 shadow-sm">
+                              <User className="w-[1.4rem] h-[1.4rem] text-white" />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                              <h3 className="text-[13px] font-bold text-slate-800 tracking-tight leading-none mb-1.5">{appt.patientName}</h3>
+                              <p className="text-[13px] text-slate-500 leading-none block">{appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}</p>
+                            </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+              </div>
+
+              {/* Faltas */}
+              <div className="bg-white rounded border border-slate-300 shadow-sm overflow-hidden flex flex-col h-[320px]">
+                  <div className="px-6 py-5">
+                    <h2 className="text-[22px] font-bold text-black border-none tracking-tight">Faltas no dia</h2>
+                  </div>
+                  <div className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-slate-200">
+                    <div className="space-y-0 divide-y divide-slate-300/60">
+                      {faltas.length === 0 ? <p className="text-sm text-slate-500 py-4 text-center">Nenhuma falta registrada</p> : faltas.map(appt => (
+                        <div key={appt.id} className="flex items-center gap-4 py-4 first:pt-0 border-b border-slate-300">
+                            <div className="w-[44px] h-[44px] rounded-full bg-[#998b88] flex items-center justify-center text-white shrink-0 shadow-sm opacity-90">
+                              <User className="w-[1.4rem] h-[1.4rem] text-white" />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                              <h3 className="text-[13px] font-bold text-slate-500 tracking-tight leading-none mb-1.5">{appt.patientName}</h3>
+                              <p className="text-[13px] text-slate-400 leading-none block">{appt.data_hora.includes('T') ? appt.data_hora.split('T')[1].substring(0,5) : ''}</p>
+                            </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
         </div>
+
       </div>
 
-      {/* Patient Record Modal */}
+      {/* Legacy Patient Record Modal (if viewing from elsewhere) */}
       <Dialog open={!!selectedPatient} onOpenChange={() => setSelectedPatientId(null)}>
         <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle>Ficha do Paciente</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-6 pt-2">
+          <div className="flex-1 overflow-y-auto p-6">
             {selectedPatient && <PatientRecord patient={selectedPatient} />}
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Appointment Details / Review Modal */}
-      <Dialog open={!!selectedApptId} onOpenChange={(open) => !open && setSelectedApptId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Detalhes do Agendamento</DialogTitle>
-          </DialogHeader>
-          {selectedAppt && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-secondary space-y-3">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Paciente</p>
-                    <p className="font-semibold text-foreground">{selectedAppt.patientName}</p>
-                  </div>
-                  <button onClick={() => setSelectedPatientId(selectedAppt.usuario_id)} className="text-xs text-primary font-medium hover:underline">
-                    Ver Ficha Completa
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-border">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Data</p>
-                    <div className="flex items-center gap-1.5 font-medium text-foreground text-sm">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {format(parseISO(selectedAppt.data_hora.split('T')[0]), 'dd/MM/yyyy')}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Horário</p>
-                    <div className="flex items-center gap-1.5 font-medium text-foreground text-sm">
-                      <Clock className="w-3.5 h-3.5" />
-                      {selectedAppt.data_hora?.includes('T') ? selectedAppt.data_hora.split('T')[1].substring(0,5) : ''}
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Tipo</p>
-                  <p className="font-medium text-foreground">{selectedAppt.type}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Motivo</p>
-                  <p className="font-medium text-foreground p-2 rounded bg-background border border-border mt-1">
-                    {selectedAppt.reason}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
     </div>
