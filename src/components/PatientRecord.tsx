@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Calendar, Clock, MapPin, Phone, Mail, Droplets, AlertTriangle, Pill, Edit, Save, X, FileText, CheckCircle, ChevronDown, ChevronUp, Upload, User as UserIconLucide, Calendar as CalendarIcon2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, Phone, Mail, Droplets, AlertTriangle, Pill, Edit, Save, X, FileText, CheckCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Upload, User as UserIconLucide, Calendar as CalendarIcon2 } from 'lucide-react';
 import { USUARIO } from '@/data/mockData';
 import { format, parseISO } from 'date-fns';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
   const [isEditing, setIsEditing] = useState(false);
   const [expandedConsultation, setExpandedConsultation] = useState<number | null>(null);
   const [isMedicationCalendarOpen, setIsMedicationCalendarOpen] = useState(false);
+  const [medicationMonth, setMedicationMonth] = useState(new Date().getMonth());
   
   // Extend editedPatient to hold the new fields from the Figma for the UI state
   const [editedPatient, setEditedPatient] = useState<any>({
@@ -590,29 +591,47 @@ const PatientRecord = ({ patient, onConcludeAppointment }: PatientRecordProps) =
 
       {/* Medication Calendar Modal */}
       <Dialog open={isMedicationCalendarOpen} onOpenChange={setIsMedicationCalendarOpen}>
-        <DialogContent className="max-w-4xl bg-white p-6 md:p-10 rounded-xl border-none shadow-2xl relative [&>button]:hidden sm:[&>button]:block">
+        <DialogContent className="max-w-md bg-white p-6 md:p-8 rounded-xl border-none shadow-2xl relative [&>button]:hidden sm:[&>button]:block">
           <button onClick={() => setIsMedicationCalendarOpen(false)} className="absolute top-4 right-4 z-50">
-            <X className="w-8 h-8 text-red-500 hover:scale-110 transition-transform stroke-[2.5]" />
+            <X className="w-6 h-6 text-slate-400 hover:text-red-500 transition-colors" />
           </button>
           
-          <div className="pt-6 w-full pb-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-                {['Jan.', 'Fev.', 'Mar.', 'Abr.', 'Mai.', 'Jun.', 'Jul.', 'Ago.', 'Set.', 'Out.', 'Nov.', 'Dez.'].map((month, mIdx) => (
-                  <div key={month} className="bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col">
-                    <h4 className="text-sm font-bold text-slate-700 mb-3 text-center border-b border-slate-200 pb-2">{month}</h4>
-                    <div className="flex flex-wrap gap-1.5 justify-center">
-                      {medicationGrid.slice(mIdx * 30, (mIdx + 1) * 30).map((day, i) => (
+          <div className="pt-2 w-full pb-2 select-none">
+            <h3 className="text-xl font-bold text-center mb-6 text-slate-800">Aderência à Medicação</h3>
+            
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                    <button onClick={() => setMedicationMonth(prev => prev > 0 ? prev - 1 : 11)} className="p-2 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 rounded-full transition-colors text-slate-600">
+                        <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h4 className="text-[17px] font-bold text-slate-800 capitalize">
+                        {['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][medicationMonth]} 2025
+                    </h4>
+                    <button onClick={() => setMedicationMonth(prev => prev < 11 ? prev + 1 : 0)} className="p-2 bg-white shadow-sm border border-slate-200 hover:bg-slate-100 rounded-full transition-colors text-slate-600">
+                        <ChevronRight className="w-4 h-4" />
+                    </button>
+                </div>
+                
+                <div className="grid grid-cols-7 gap-y-3 sm:gap-y-4 gap-x-2 justify-items-center">
+                    {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+                        <div key={i} className="text-[11px] font-bold text-slate-400 mb-2">{d}</div>
+                    ))}
+
+                    {/* Fake offset based on month purely for mockup visuals */}
+                    {Array.from({length: (medicationMonth * 2 + 3) % 7}).map((_, i) => <div key={'off'+i} className="w-8 h-8 sm:w-10 sm:h-10"/>)}
+
+                    {medicationGrid.slice(medicationMonth * 30, (medicationMonth + 1) * 30).map((day, i) => (
                         <div 
                           key={i} 
-                          title={`Dia ${i+1} de ${month}`}
-                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-sm transition-transform hover:scale-125 cursor-pointer ${
-                             day === 'green' ? 'bg-[#00ff22]' : day === 'yellow' ? 'bg-[#ffbc2c]' : 'bg-[#ff0000]'
+                          title={`Dia ${i+1}`}
+                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg transition-transform hover:scale-105 cursor-pointer shadow-sm flex items-center justify-center text-[10px] sm:text-xs font-bold text-black/30 border border-black/5 ${
+                              day === 'green' ? 'bg-[#22c55e]' : day === 'yellow' ? 'bg-[#facc15]' : 'bg-[#ef4444]'
                           }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                        >
+                           {i+1}
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Legend */}

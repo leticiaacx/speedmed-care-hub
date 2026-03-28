@@ -131,7 +131,7 @@ const DoctorHome = () => {
         </div>
 
         {/* Outer wrapper for mobile vs desktop */}
-        <div className="flex flex-col xl:flex-row gap-8 min-w-[900px]">
+        <div className="flex flex-col xl:flex-row gap-8 w-full">
           
           {/* Patient Profile */}
           <div className="flex-shrink-0 flex flex-col items-center xl:items-start w-48">
