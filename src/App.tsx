@@ -15,6 +15,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminDoctors from "./pages/admin/AdminDoctors";
 import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminPatients from "./pages/admin/AdminPatients";
+import AdminSettings from './pages/admin/AdminSettings';
 
 // Doctor
 import DoctorLayout from "./components/DoctorLayout";
@@ -54,6 +55,7 @@ const App = () => (
                   <Route path="doctors" element={<AdminDoctors />} />
                   <Route path="appointments" element={<AdminAppointments />} />
                   <Route path="patients" element={<AdminPatients />} />
+                  <Route path="settings" element={<AdminSettings />} />
                 </Route>
 
                 <Route path="/doctor" element={<DoctorLayout />}>

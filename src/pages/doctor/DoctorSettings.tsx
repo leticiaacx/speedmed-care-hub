@@ -16,44 +16,122 @@ const tabs = [
   { id: 'appearance', label: 'Aparência', icon: Palette },
 ];
 
+// ✅ FUNÇÕES DE LOCALSTORAGE PARA MÉDICO
+const DOCTOR_STORAGE_KEY = (doctorId: number) => `doctor_${doctorId}`;
+
+const loadDoctorFromStorage = (doctor: MEDICO | null) => {
+  if (!doctor) return null;
+  try {
+    const stored = localStorage.getItem(DOCTOR_STORAGE_KEY(doctor.id));
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      console.log('✅ Dados do médico carregados do localStorage:', parsed);
+      return parsed;
+    }
+  } catch (error) {
+    console.error('❌ Erro ao carregar médico do localStorage:', error);
+  }
+  return null;
+};
+
+const saveDoctorToStorage = (doctor: any) => {
+  try {
+    localStorage.setItem(DOCTOR_STORAGE_KEY(doctor.id), JSON.stringify(doctor));
+    console.log('✅ Dados do médico salvos no localStorage');
+  } catch (error) {
+    console.error('❌ Erro ao salvar médico no localStorage:', error);
+  }
+};
+
+// ✅ DISPARA EVENTO CUSTOMIZADO QUANDO DADOS DO MÉDICO MUDAM
+const notifyDoctorUpdate = (doctor: any) => {
+  window.dispatchEvent(new CustomEvent('doctorUpdated', { detail: doctor }));
+};
+
 const DoctorSettings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const { theme, toggleTheme } = useTheme();
   const { currentUser, updateDoctorSchedule } = useUser();
   const doctor = currentUser as MEDICO | null;
 
-  const [profile, setProfile] = useState({
-    nome: doctor?.nome || '',
-    especialidade: doctor?.especialidade || '',
-    crm: doctor?.crm || '',
-    email: doctor?.email || '',
-    phone: doctor?.phone || '',
+  // ✅ CARREGAR DADOS DO STORAGE OU USAR PADRÃO
+  const [profile, setProfile] = useState(() => {
+    const stored = loadDoctorFromStorage(doctor);
+    if (stored) {
+      return {
+        nome: stored.nome || doctor?.nome || '',
+        especialidade: stored.especialidade || doctor?.especialidade || '',
+        crm: stored.crm || doctor?.crm || '',
+        email: stored.email || doctor?.email || '',
+        phone: stored.phone || doctor?.phone || '',
+      };
+    }
+    return {
+      nome: doctor?.nome || '',
+      especialidade: doctor?.especialidade || '',
+      crm: doctor?.crm || '',
+      email: doctor?.email || '',
+      phone: doctor?.phone || '',
+    };
   });
 
-  const [availability, setAvailability] = useState<{ location: string; onlineConsultation: boolean }>({
-    location: doctor?.location || 'Clínica SpeedMed - Unidade Centro',
-    onlineConsultation: doctor?.onlineConsultation ?? true
+  const [availability, setAvailability] = useState<{ location: string; onlineConsultation: boolean }>(() => {
+    const stored = loadDoctorFromStorage(doctor);
+    if (stored) {
+      return {
+        location: stored.location || doctor?.location || 'Clínica SpeedMed - Unidade Centro',
+        onlineConsultation: stored.onlineConsultation !== undefined ? stored.onlineConsultation : (doctor?.onlineConsultation ?? true)
+      };
+    }
+    return {
+      location: doctor?.location || 'Clínica SpeedMed - Unidade Centro',
+      onlineConsultation: doctor?.onlineConsultation ?? true
+    };
   });
 
   // Clone schedule for editing
-  const [editingSchedule, setEditingSchedule] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>(doctor?.schedule || []);
+  const [editingSchedule, setEditingSchedule] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>(() => {
+    const stored = loadDoctorFromStorage(doctor);
+    if (stored?.schedule) {
+      return [...stored.schedule];
+    }
+    return doctor?.schedule || [];
+  });
 
   const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
 
   useEffect(() => {
     if (doctor) {
-      setProfile({
-        nome: doctor.nome,
-        especialidade: doctor.especialidade,
-        crm: doctor.crm,
-        email: doctor.email,
-        phone: doctor.phone,
-      });
-      setAvailability({
-        location: doctor.location || 'Clínica SpeedMed - Unidade Centro',
-        onlineConsultation: doctor.onlineConsultation || true
-      });
-      setEditingSchedule([...doctor.schedule]);
+      const stored = loadDoctorFromStorage(doctor);
+      if (stored) {
+        setProfile({
+          nome: stored.nome || doctor.nome,
+          especialidade: stored.especialidade || doctor.especialidade,
+          crm: stored.crm || doctor.crm,
+          email: stored.email || doctor.email,
+          phone: stored.phone || doctor.phone,
+        });
+        setAvailability({
+          location: stored.location || doctor.location || 'Clínica SpeedMed - Unidade Centro',
+          onlineConsultation: stored.onlineConsultation !== undefined ? stored.onlineConsultation : (doctor.onlineConsultation || true)
+        });
+        if (stored.schedule) {
+          setEditingSchedule([...stored.schedule]);
+        }
+      } else {
+        setProfile({
+          nome: doctor.nome,
+          especialidade: doctor.especialidade,
+          crm: doctor.crm,
+          email: doctor.email,
+          phone: doctor.phone,
+        });
+        setAvailability({
+          location: doctor.location || 'Clínica SpeedMed - Unidade Centro',
+          onlineConsultation: doctor.onlineConsultation || true
+        });
+        setEditingSchedule([...doctor.schedule]);
+      }
     }
   }, [doctor]);
 
@@ -71,22 +149,45 @@ const DoctorSettings = () => {
     setEditingSchedule(editingSchedule.filter((_, i) => i !== index));
   };
 
+  // ✅ SALVAR PERFIL COM NOTIFICAÇÃO
   const handleSaveProfile = () => {
-    // In a real app, you'd call an API to update the doctor's profile
-    toast.success('Perfil atualizado com sucesso!');
+    if (doctor) {
+      const updatedDoctor = {
+        ...doctor,
+        ...profile,
+      };
+      saveDoctorToStorage(updatedDoctor);
+      notifyDoctorUpdate(updatedDoctor);
+      toast.success('Perfil atualizado com sucesso!');
+    }
   };
 
+  // ✅ SALVAR DISPONIBILIDADE COM NOTIFICAÇÃO
   const handleSaveAvailability = () => {
-    // In a real app, you'd call an API to update the doctor's availability settings
-    toast.success('Configurações de disponibilidade salvas!');
+    if (doctor) {
+      const updatedDoctor = {
+        ...doctor,
+        ...availability,
+      };
+      saveDoctorToStorage(updatedDoctor);
+      notifyDoctorUpdate(updatedDoctor);
+      toast.success('Configurações de disponibilidade salvas!');
+    }
   };
 
   const handleSaveSecurity = () => {
     toast.success('Senha atualizada com sucesso!');
   };
 
+  // ✅ SALVAR AGENDA COM NOTIFICAÇÃO
   const handleSaveSchedule = () => {
     if (doctor) {
+      const updatedDoctor = {
+        ...doctor,
+        schedule: editingSchedule,
+      };
+      saveDoctorToStorage(updatedDoctor);
+      notifyDoctorUpdate(updatedDoctor);
       updateDoctorSchedule(doctor.id, editingSchedule);
       toast.success('Agenda atualizada com sucesso!');
     } else {

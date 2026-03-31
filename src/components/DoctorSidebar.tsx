@@ -1,9 +1,10 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, ClipboardList, FileText, Home, LogOut, Settings, User, Moon, Sun, Bell } from 'lucide-react';
-import speedmedLogo from '@/assets/SpeedMED - Principal(1).svg';
+import speedmedLogo from '@/assets/logo_reduzida.svg';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { useUser, MEDICO } from '@/contexts/UserContext';
+import { useState, useEffect } from 'react';
 
 const menuItems = [
   { icon: Home, label: 'Painel', path: '/doctor' },
@@ -13,39 +14,128 @@ const menuItems = [
   { icon: Settings, label: 'Configurações', path: '/doctor/settings' },
 ];
 
+// FUNÇÃO PARA CARREGAR DADOS DO STORAGE
+const loadDoctorFromStorage = (doctorId: number) => {
+  try {
+    const stored = localStorage.getItem(`doctor_${doctorId}`);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Erro ao carregar médico do localStorage:', error);
+  }
+  return null;
+};
+
 const DoctorSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { unreadCount, pendingAppointmentsCount } = useAppointments();
   const { currentUser, logout } = useUser();
-  const doctor = currentUser as MEDICO | null;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const toggleSidebar = () => setIsExpanded(!isExpanded);
+
+  // STATE PARA MÉDICO COM DADOS DO STORAGE
+  const [doctor, setDoctor] = useState<MEDICO | null>(() => {
+    if (currentUser && 'especialidade' in currentUser) {
+      const stored = loadDoctorFromStorage(currentUser.id);
+      return stored || (currentUser as MEDICO);
+    }
+    return currentUser as MEDICO | null;
+  });
+
+  // SINCRONIZAR COM EVENTO CUSTOMIZADO QUANDO SETTINGS MUDAR
+  useEffect(() => {
+    const handleDoctorUpdate = (event: any) => {
+      console.log('✅ Evento doctorUpdated recebido:', event.detail);
+      setDoctor(event.detail);
+    };
+
+    window.addEventListener('doctorUpdated', handleDoctorUpdate);
+
+    return () => {
+      window.removeEventListener('doctorUpdated', handleDoctorUpdate);
+    };
+  }, []);
+
+  // VERIFICAR MUDANÇAS NO STORAGE A CADA 2 SEGUNDOS (fallback)
+  useEffect(() => {
+    if (!doctor) return;
+
+    const interval = setInterval(() => {
+      const stored = loadDoctorFromStorage(doctor.id);
+      if (stored) {
+        setDoctor(stored);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [doctor]);
+
+  if (!doctor) return null;
 
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="w-64 min-h-screen flex-col bg-card border-r border-border hidden lg:flex">
-        <div className="p-5 flex items-center gap-3">
-          <img src={speedmedLogo} alt="SpeedMed" className="h-8 w-auto rounded" />
-          <span className="text-lg font-bold font-heading text-foreground">
-            Speed-med
-          </span>
-        </div>
+      <aside
+        onMouseEnter={() => setIsExpanded(true)}
+        onMouseLeave={() => setIsExpanded(false)}
+        className={`fixed top-0 left-0 h-screen bg-card border-r border-border z-50 flex flex-col overflow-hidden
+  transition-all duration-300 ease-in-out hidden lg:flex
+  ${isExpanded ? "w-64 shadow-2xl" : "w-20"}`}
+      >
+        {/* Header com a Logo (Link para Dashboard) */}
+        <button
+          onClick={() => navigate('/doctor')}
+          className="flex items-center h-24 mt-4 focus:outline-none group"
+        >
+          <div className="flex items-center justify-center w-20 shrink-0">
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-110">
+              <img
+                src={speedmedLogo}
+                alt="SpeedMED"
+                className="w-full h-full object-contain rounded"
+              />
+            </div>
+          </div>
+        </button>
 
-        <nav className="flex-1 py-2">
+        {/* Menu de Navegação */}
+        <nav className="flex flex-col gap-2 mt-8 flex-1">
           {menuItems.map((item) => {
+            const Icon = item.icon;
             const isActive = location.pathname === item.path;
+
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-all relative ${isActive ? 'font-semibold text-primary bg-primary/10 border-l-4 border-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border-l-4 border-transparent'
+                className={`flex items-center h-12 transition-all duration-300 relative
+          ${isExpanded ? "px-0" : "px-0"}
+          ${isActive
+                    ? "text-primary bg-primary/10 border-l-4 border-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border-l-4 border-transparent"
                   }`}
               >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                {/* Container fixo do ícone - ESSENCIAL PARA A TRANSIÇÃO */}
+                <div className="flex items-center justify-center w-20 shrink-0">
+                  <Icon size={24} />
+                </div>
+
+                {/* Texto que surge suavemente */}
+                <span
+                  className={`text-sm whitespace-nowrap overflow-hidden transition-all duration-300
+            ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}
+            ${isActive ? "font-bold" : "font-medium"}`}
+                >
+                  {item.label}
+                </span>
+
+                {/* Badge de notificações (Ajustado para o novo layout) */}
                 {item.path === '/doctor/appointments' && pendingAppointmentsCount > 0 && (
-                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className={`absolute bg-destructive text-destructive-foreground text-[10px] rounded-full w-5 h-5 flex items-center justify-center transition-all duration-300
+              ${isExpanded ? "right-4 opacity-100" : "right-2 scale-75"}`}>
                     {pendingAppointmentsCount}
                   </span>
                 )}
@@ -54,26 +144,34 @@ const DoctorSidebar = () => {
           })}
         </nav>
 
-        {/* Doctor info + logout */}
-        <div className="p-4 border-t border-border mt-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">{doctor?.nome.split(' ').map((n: string) => n[0]).join('').substring(0, 2) || 'MD'}</span>
+        {/* Footer: Info Médico e Sair */}
+        <div className="mt-auto border-t border-border bg-card/50">
+          {/* Avatar / Nome */}
+          <div className="flex items-center h-16">
+            <div className="flex items-center justify-center w-20 shrink-0">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                <span className="text-sm font-bold text-primary-foreground">
+                  {doctor?.nome.split(' ').map((n: string) => n[0]).join('').substring(0, 2) || 'MD'}
+                </span>
+              </div>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-foreground truncate" title={doctor?.nome || ''}>{doctor?.nome || 'Médico'}</p>
-              <p className="text-xs text-muted-foreground truncate">{doctor?.especialidade || 'Especialidade'}</p>
+            <div className={`flex flex-col transition-all duration-300 overflow-hidden ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}>
+              <p className="text-sm font-bold text-foreground truncate max-w-[150px]">{doctor?.nome || 'Médico'}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{doctor?.especialidade || 'Especialidade'}</p>
             </div>
           </div>
+
+          {/* Botão Sair */}
           <button
-            onClick={() => {
-              logout();
-              navigate('/');
-            }}
-            className="w-full flex items-center justify-center gap-2 text-sm text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-950/30 py-3 rounded-lg transition-colors border border-red-200 dark:border-red-900 mt-2"
+            onClick={() => { logout(); navigate('/'); }}
+            className="flex items-center h-14 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300"
           >
-            <LogOut className="w-5 h-5" />
-            <span>Sair do Sistema</span>
+            <div className="flex items-center justify-center w-20 shrink-0">
+              <LogOut size={24} />
+            </div>
+            <span className={`text-sm font-bold transition-all duration-300 ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}>
+              Sair do Sistema
+            </span>
           </button>
         </div>
       </aside>

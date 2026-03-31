@@ -1,56 +1,130 @@
-import { ChevronRight, User, Clock, Pill } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User, Clock, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { useUser, MEDICO } from '@/contexts/UserContext';
 import { parseISO, isToday, isFuture } from 'date-fns';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import PatientRecord from '@/components/PatientRecord';
+import { useMedication, DayStatus } from '@/contexts/MedicationContext';
+
+const loadPatientFromStorage = (patientId: number) => {
+  try {
+    const stored = localStorage.getItem(`patient_${patientId}`);
+    if (stored) return JSON.parse(stored);
+  } catch (error) {
+    console.error('Erro ao carregar do localStorage:', error);
+  }
+  return null;
+};
 
 const DoctorHome = () => {
   const navigate = useNavigate();
-  const { appointments } = useAppointments();
   const { currentUser, patients } = useUser();
+  const { getMonthEntries } = useMedication();
   const doctor = currentUser as MEDICO | null;
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
+  const [patientStorageData, setPatientStorageData] = useState<any>({});
 
-  const nextAppt = appointments
-    .filter(a => isFuture(parseISO(a.data_hora.split('T')[0])))
-    .sort((a, b) => a.data_hora.localeCompare(b.data_hora))[0];
-  const nextPatientId = nextAppt?.usuario_id || 1;
-  const nextPatientData = patients?.find(p => p.id === nextPatientId) || patients?.[0];
+  const today = new Date();
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+  const calYear = today.getFullYear();
 
-  const defaultUpcoming: any[] = [
-    { id: 1, usuario_id: 1, patientName: 'Rogerio Silva', data_hora: '2025-01-30T10:00:00' },
-    { id: 2, usuario_id: 2, patientName: 'Maria Alves', data_hora: '2025-01-30T13:00:00' },
-    { id: 3, usuario_id: 3, patientName: 'Lorena Almeida', data_hora: '2025-01-30T14:00:00' },
-  ];
+  const { appointments } = useAppointments();
 
-  const upcomingAppointments = appointments
-    .filter(a => isFuture(parseISO(a.data_hora.split('T')[0])))
-    .sort((a, b) => a.data_hora.localeCompare(b.data_hora))
-    .slice(0, 3);
+  const todayQueue = appointments
+    .filter(a => {
+      const apptDate = parseISO(a.data_hora);
+      return isToday(apptDate) && ['pendente', 'confirmado'].includes(a.status);
+    })
+    .sort((a, b) => a.data_hora.localeCompare(b.data_hora));
 
-  const displayAppointments = upcomingAppointments.length >= 3 ? upcomingAppointments : defaultUpcoming;
+  const nextAppt = todayQueue[0];
+  const nextPatientId = nextAppt?.usuario_id || (patients && patients[0]?.id) || 1;
+  const nextPatientData = patients?.find(p => p.id === nextPatientId) || (patients && patients[0]);
 
+  // ✅ Declarado apenas uma vez
+  const displayAppointments = todayQueue.slice(0, 3);
+
+  // ✅ Declarado apenas uma vez, usando isToday corretamente
+  const todayAppts = appointments.filter(a => isToday(parseISO(a.data_hora)));
+
+  // ✅ Declarado apenas uma vez
   const stats = [
-    { label: 'Indefinidos', count: 2, color: 'bg-slate-200' },
-    { label: 'Faltas', count: 1, color: 'bg-red-500' },
-    { label: 'Desmarcados', count: 0, color: 'bg-yellow-400' },
-    { label: 'Confirmados', count: 8, color: 'bg-sky-500' },
-    { label: 'Presenças', count: 6, color: 'bg-green-500' },
+    { label: 'Indefinidos', count: todayAppts.filter(a => a.status === 'pendente').length, color: 'bg-slate-200' },
+    { label: 'Faltas', count: todayAppts.filter(a => a.status === 'falta').length, color: 'bg-red-500' },
+    { label: 'Desmarcados', count: todayAppts.filter(a => a.status === 'cancelado').length, color: 'bg-yellow-400' },
+    { label: 'Confirmados', count: todayAppts.filter(a => a.status === 'confirmado').length, color: 'bg-sky-500' },
+    { label: 'Presenças', count: todayAppts.filter(a => a.status === 'realizado').length, color: 'bg-green-500' },
   ];
 
-  const totalStats = stats.reduce((acc, curr) => acc + curr.count, 0) || 17;
+  const totalStats = todayAppts.length;
 
-  // birthDate: só ano disponível via age
-  const birthYear = nextPatientData?.age
-    ? new Date().getFullYear() - nextPatientData.age
+  const mergedPatientData = nextPatientData
+    ? { ...nextPatientData, ...patientStorageData[nextPatientId] }
     : null;
-  const birthDate = birthYear ? `01/01/${birthYear}` : 'Não informada';
 
-  // Tratamentos: usa medications[] como fallback até treatments ser adicionado ao tipo
-  const medications: string[] = nextPatientData?.medications || [];
+  const birthYear = mergedPatientData?.age ? calYear - mergedPatientData.age : null;
+  const birthDate = birthYear ? `01/01/${birthYear}` : 'Não informada';
+  const medications: string[] = mergedPatientData?.medications || [];
+  const allergies: string[] = mergedPatientData?.allergies || [];
+  const photoUrl: string | null = mergedPatientData?.photo || null;
+
+  const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+  const miniStatusColor: Record<DayStatus, string> = {
+    all: 'bg-green-500 text-white',
+    partial: 'bg-orange-400 text-white',
+    none: 'bg-red-600 text-white',
+    'no-medication': 'bg-slate-100 text-muted-foreground/40',
+  };
+
+  const monthEntries = mergedPatientData
+    ? getMonthEntries(mergedPatientData.id, calYear, calMonth)
+    : [];
+  const statusMap: Record<number, DayStatus> = {};
+  monthEntries.forEach(e => {
+    statusMap[parseInt(e.date.split('-')[2])] = e.status;
+  });
+
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const firstDay = (new Date(calYear, calMonth, 1).getDay() + 6) % 7;
+
+  useEffect(() => {
+    if (nextPatientId) {
+      const storedData = loadPatientFromStorage(nextPatientId);
+      if (storedData) {
+        setPatientStorageData(prev => ({ ...prev, [nextPatientId]: storedData }));
+      }
+    }
+  }, [nextPatientId]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (nextPatientId) {
+        const storedData = loadPatientFromStorage(nextPatientId);
+        if (storedData) {
+          setPatientStorageData(prev => ({ ...prev, [nextPatientId]: storedData }));
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    const interval = setInterval(() => {
+      if (nextPatientId) {
+        const storedData = loadPatientFromStorage(nextPatientId);
+        if (storedData) {
+          setPatientStorageData(prev => ({ ...prev, [nextPatientId]: storedData }));
+        }
+      }
+    }, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [nextPatientId]);
 
   return (
     <div className="space-y-6">
@@ -63,14 +137,10 @@ const DoctorHome = () => {
               <h2 className="text-lg font-light text-foreground">Agendamentos</h2>
               <p className="text-xs text-muted-foreground mt-0.5">Próximos atendimentos</p>
             </div>
-            <button
-              onClick={() => navigate('/doctor/appointments')}
-              className="text-muted-foreground hover:text-foreground transition-colors absolute top-5 right-5"
-            >
+            <button onClick={() => navigate('/doctor/appointments')} className="text-muted-foreground hover:text-foreground transition-colors absolute top-5 right-5">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-
           <div className="space-y-5">
             {displayAppointments.map((appt) => (
               <div key={appt.id} className="flex items-center gap-3">
@@ -88,10 +158,9 @@ const DoctorHome = () => {
           </div>
         </div>
 
-        {/* Estatísticas do Dia */}
+        {/* Estatísticas */}
         <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-border p-4 sm:p-5 flex flex-col">
           <h2 className="text-lg font-light text-foreground mb-6">Estatísticas do Dia</h2>
-
           <div className="flex h-2 w-full rounded-full overflow-hidden mb-6">
             <div style={{ width: '12%', backgroundColor: '#e2e8f0' }}></div>
             <div style={{ width: '6%', backgroundColor: '#ef4444' }}></div>
@@ -99,7 +168,6 @@ const DoctorHome = () => {
             <div style={{ width: '47%', backgroundColor: '#0ea5e9' }}></div>
             <div style={{ width: '35%', backgroundColor: '#22c55e' }}></div>
           </div>
-
           <div className="space-y-4 flex-1">
             {stats.map((stat, i) => (
               <div key={i} className="flex justify-between items-center">
@@ -111,13 +179,10 @@ const DoctorHome = () => {
               </div>
             ))}
           </div>
-
           <div className="mt-6 flex justify-end">
             <div className="flex border border-sky-400 rounded-md overflow-hidden max-w-[220px] w-full">
               <div className="flex-1 px-4 py-1.5 bg-white dark:bg-card text-sm font-light text-foreground flex items-center">Total</div>
-              <div className="bg-sky-500 text-white px-8 py-1.5 text-sm font-light flex items-center justify-center">
-                {totalStats}
-              </div>
+              <div className="bg-sky-500 text-white px-8 py-1.5 text-sm font-light flex items-center justify-center">{totalStats}</div>
             </div>
           </div>
         </div>
@@ -140,98 +205,71 @@ const DoctorHome = () => {
           {/* Foto + nome */}
           <div className="flex-shrink-0 flex flex-col items-center xl:items-start w-36">
             <div className="w-32 h-40 bg-slate-100 rounded-xl mb-3 flex items-center justify-center border border-slate-200 overflow-hidden">
-              <User className="w-14 h-14 text-slate-300" />
+              {photoUrl ? (
+                <img src={photoUrl} alt={mergedPatientData?.nome} className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-14 h-14 text-slate-300" />
+              )}
             </div>
-            <p className="text-sm font-light text-foreground leading-tight text-center xl:text-left">
-              {nextPatientData?.nome || 'Paciente'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {nextPatientData?.age ? `${nextPatientData.age} anos` : 'Idade não informada'}
-            </p>
+            <p className="text-sm font-light text-foreground leading-tight text-center xl:text-left">{mergedPatientData?.nome || 'Paciente'}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{mergedPatientData?.age ? `${mergedPatientData.age} anos` : 'Idade não informada'}</p>
           </div>
 
           {/* Infos + Calendário */}
           <div className="flex-[1.5]">
             <div className="grid grid-cols-2 gap-x-6 gap-y-4 max-w-[500px]">
 
-              {/* Data de Nascimento */}
               <div className="col-span-1">
                 <p className="text-xs text-muted-foreground mb-1">Data de Nascimento:</p>
                 <p className="text-sm font-light text-foreground">{birthDate}</p>
               </div>
 
-              {/* Seletor mês/ano do calendário */}
               <div className="col-span-1 flex items-center gap-1">
-                <select className="bg-transparent text-sm font-light outline-none text-foreground cursor-pointer">
-                  <option>Janeiro</option>
-                  <option>Fevereiro</option>
-                  <option>Março</option>
-                  <option>Abril</option>
-                  <option>Maio</option>
-                  <option>Junho</option>
-                  <option>Julho</option>
-                  <option>Agosto</option>
-                  <option>Setembro</option>
-                  <option>Outubro</option>
-                  <option>Novembro</option>
-                  <option>Dezembro</option>
-                </select>
-                <ChevronRight className="w-3 h-3 text-foreground/40 rotate-90 flex-shrink-0" />
-                <select className="bg-transparent text-sm font-light outline-none text-foreground cursor-pointer ml-2">
-                  <option>2025</option>
-                  <option>2026</option>
-                </select>
-                <ChevronRight className="w-3 h-3 text-foreground/40 rotate-90 flex-shrink-0" />
+                <button onClick={() => setCalMonth(m => m > 0 ? m - 1 : 11)} className="p-0.5 hover:bg-slate-100 rounded transition-colors">
+                  <ChevronLeft className="w-3 h-3 text-foreground/50" />
+                </button>
+                <span className="text-sm font-light text-foreground mx-1">{monthNames[calMonth]}</span>
+                <button onClick={() => setCalMonth(m => m < 11 ? m + 1 : 0)} className="p-0.5 hover:bg-slate-100 rounded transition-colors">
+                  <ChevronRight className="w-3 h-3 text-foreground/50" />
+                </button>
+                <span className="text-sm font-light text-foreground ml-2">{calYear}</span>
               </div>
 
-              {/* Alergia */}
               <div className="col-span-1">
                 <p className="text-xs text-muted-foreground mb-1">Alergia: (Opcional)</p>
                 <p className="text-sm font-light text-foreground">
-                  {nextPatientData?.allergies?.length
-                    ? nextPatientData.allergies.join(', ')
-                    : 'Ex: Dipirona, poeira'}
+                  {allergies.length ? allergies.join(', ') : 'Ex: Dipirona, poeira'}
                 </p>
               </div>
 
-              {/* Calendário */}
               <div className="col-span-1 row-span-3">
-                <div className="grid grid-cols-7 gap-y-1 gap-x-0.5 text-center w-full max-w-[210px]">
-                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(d => (
-                    <div key={d} className="text-[9px] font-light text-muted-foreground mb-0.5">{d}</div>
+                <div className="grid grid-cols-7 text-center w-full max-w-[210px]">
+                  {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'].map(d => (
+                    <div key={d} className="text-[9px] font-light text-muted-foreground pb-1">{d}</div>
                   ))}
-                  <div className="text-[10px] text-muted-foreground/40 flex items-center justify-center h-5">30</div>
-                  {[1, 2, 3, 4, 5, 6].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
-                  {[7].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
-                  {[8, 9, 10, 11, 12].map(d => <div key={d} className="bg-orange-400 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
-                  {[13, 14, 15, 16, 17, 18, 19].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
-                  {[20, 21].map(d => <div key={d} className="bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
-                  {[22, 23, 24, 25, 26, 27, 28, 29, 30, 31].map(d => <div key={d} className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center mx-auto text-[10px]">{d}</div>)}
-                  {[1, 2, 3].map(d => <div key={`next-${d}`} className="text-[10px] text-muted-foreground/40 flex items-center justify-center h-5">{d}</div>)}
+                  {Array.from({ length: firstDay }).map((_, i) => <div key={`off-${i}`} />)}
+                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+                    const isFutureDay = new Date(calYear, calMonth, day) > today;
+                    const status = isFutureDay ? 'no-medication' : (statusMap[day] || 'no-medication');
+                    return (
+                      <div key={day} className="flex items-center justify-center my-0.5">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-light ${miniStatusColor[status]}`}>
+                          {day}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Cuidador — checkbox estilo referência */}
               <div className="col-span-1">
                 <p className="text-xs text-muted-foreground mb-1">Cuidador ou Responsável:</p>
                 <div className="flex items-center gap-3 mt-1">
                   <label className="flex items-center gap-1.5 cursor-pointer text-sm font-light text-foreground">
-                    <input
-                      type="checkbox"
-                      readOnly
-                      checked={!!nextPatientData?.requiresCompanion}
-                      className="w-3.5 h-3.5 accent-sky-500"
-                    />
-                    Tem
+                    <input type="checkbox" readOnly checked={!!mergedPatientData?.requiresCompanion} className="w-3.5 h-3.5 accent-sky-500" /> Tem
                   </label>
                   <label className="flex items-center gap-1.5 cursor-pointer text-sm font-light text-foreground">
-                    <input
-                      type="checkbox"
-                      readOnly
-                      checked={!nextPatientData?.requiresCompanion}
-                      className="w-3.5 h-3.5 accent-sky-500"
-                    />
-                    Não Tem
+                    <input type="checkbox" readOnly checked={!mergedPatientData?.requiresCompanion} className="w-3.5 h-3.5 accent-sky-500" /> Não Tem
                   </label>
                 </div>
               </div>
@@ -244,7 +282,6 @@ const DoctorHome = () => {
             <p className="text-xs text-muted-foreground mb-2">Tratamentos:</p>
             <div className="space-y-3">
               {medications.length > 0 ? (
-                // Agrupa medications em um card único enquanto treatments não existe no tipo
                 <div className="border border-[#7dd3fc] dark:border-sky-800 rounded-lg p-3 bg-white dark:bg-card">
                   <h4 className="text-xs font-light text-foreground border-b border-[#bae6fd] dark:border-sky-900 pb-2 mb-2 relative pr-24">
                     Medicamentos em uso
@@ -272,7 +309,7 @@ const DoctorHome = () => {
         </div>
       </div>
 
-      {/* Modal Ficha do Paciente */}
+      {/* Modal Ficha */}
       <Dialog open={!!selectedPatientId} onOpenChange={(open) => !open && setSelectedPatientId(null)}>
         <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] flex flex-col p-0 overflow-hidden bg-background">
           <div className="flex-1 overflow-y-auto p-0">
