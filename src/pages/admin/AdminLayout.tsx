@@ -4,6 +4,7 @@ import { LayoutDashboard, Settings, Users, Calendar, Stethoscope, LogOut, Moon, 
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUser } from '@/contexts/UserContext';
 import speedmedLogo from '@/assets/logo_reduzida.svg';
+import { useAppointments } from '@/contexts/AppointmentContext';
 
 const AdminLayout = () => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -13,10 +14,10 @@ const AdminLayout = () => {
     const { logout, currentUser, userRole } = useUser();
 
     const [adminName, setAdminName] = useState(() => {
-    const stored = localStorage.getItem('admin_clinic_data');
-    // Se não houver nada no storage, o padrão agora é "SpeedMed Matriz"
-    return stored ? JSON.parse(stored).name : 'SpeedMed Matriz';
-});
+        const stored = localStorage.getItem('admin_clinic_data');
+        // Se não houver nada no storage, o padrão agora é "SpeedMed Matriz"
+        return stored ? JSON.parse(stored).name : 'SpeedMed Matriz';
+    });
 
     useEffect(() => {
         const handleUpdate = (event: any) => {
@@ -40,6 +41,8 @@ const AdminLayout = () => {
         { icon: Users, label: 'Pacientes', path: '/admin/patients' },
         { icon: Settings, label: 'Configurações', path: '/admin/settings' },
     ];
+
+    const { pendingAppointmentsCount } = useAppointments();
 
     return (
         <div className="flex min-h-screen bg-background text-foreground font-sans">
@@ -75,9 +78,9 @@ const AdminLayout = () => {
                                 onClick={() => navigate(item.path)}
                                 className={`flex items-center h-12 transition-all duration-300 relative
                                 ${isActive
-                                    ? "text-primary bg-primary/10 border-l-4 border-primary"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border-l-4 border-transparent"
-                                }`}
+                                        ? "text-primary bg-primary/10 border-l-4 border-primary"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border-l-4 border-transparent"
+                                    }`}
                             >
                                 <div className="flex items-center justify-center w-20 shrink-0">
                                     <Icon size={24} />
@@ -124,6 +127,52 @@ const AdminLayout = () => {
                     </button>
                 </div>
             </aside>
+
+            {/* ... código da aside desktop acima ... */}
+
+            {/* Mobile nav (Aparece apenas em telas pequenas) */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 flex justify-around py-2 px-1 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+                {menuItems.map(item => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                        <button
+                            key={item.path}
+                            onClick={() => navigate(item.path)}
+                            className="flex flex-col items-center gap-1 p-1 relative min-w-[60px]"
+                        >
+                            <item.icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <span className={`text-[10px] ${isActive ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                                {item.label}
+                            </span>
+
+                            {/* Badge de notificações caso queira no mobile também */}
+                            {item.path === '/admin/appointments' && pendingAppointmentsCount > 0 && (
+                                <span className="absolute top-0 right-2 bg-primary text-primary-foreground text-[8px] rounded-full w-3 h-3 flex items-center justify-center translate-x-1 -translate-y-1">
+                                    {pendingAppointmentsCount}
+                                </span>
+                            )}
+                        </button>
+                    );
+                })}
+
+                {/* Botão Sair no Mobile */}
+                <button
+                    onClick={() => { logout(); navigate('/'); }}
+                    className="flex flex-col items-center gap-1 p-1"
+                >
+                    <LogOut className="w-5 h-5 text-red-500" />
+                    <span className="text-[10px] text-red-500 font-bold">Sair</span>
+                </button>
+            </div>
+
+            {/* Conteúdo Principal */}
+            <div className="flex-1 lg:ml-20 flex flex-col min-w-0">
+                <main className="flex-1 p-4 md:p-10 overflow-y-auto pb-24 lg:pb-10"> {/* Adicionado pb-24 aqui */}
+                    <div className="max-w-7xl mx-auto">
+                        <Outlet />
+                    </div>
+                </main>
+            </div>
 
             {/* Main Content */}
             <div className={`flex-1 transition-all duration-300 flex flex-col min-w-0 lg:ml-20`}>
