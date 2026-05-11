@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye, Plus, Check, X, AlertTriangle, ChevronDown, User, BarChart2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, ChevronLeft, ChevronRight, Eye, Check, X, AlertTriangle, ChevronDown, User } from 'lucide-react';
 import { mockPatients } from '@/data/mockData';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, isFuture } from 'date-fns';
@@ -13,7 +13,7 @@ import PatientRecord from '@/components/PatientRecord';
 const DoctorAppointments = () => {
   const { appointments } = useAppointments();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
   const [selectedApptId, setSelectedApptId] = useState<number | null>(null);
 
@@ -108,7 +108,7 @@ const DoctorAppointments = () => {
           
           <div className="bg-[#f2f2f2] p-4 sm:p-6 rounded-b-lg border border-t-0 border-slate-200">
             {/* Filter Row */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
               <div className="flex gap-4 w-full sm:w-auto">
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-slate-800">Data</label>
@@ -135,10 +135,6 @@ const DoctorAppointments = () => {
                   </Select>
                 </div>
               </div>
-              
-              <Button className="h-9 px-6 bg-[#12aef4] hover:bg-sky-500 text-white rounded gap-3 text-[13px] font-medium shadow-none mt-2 sm:mt-0 active:scale-95 transition-transform w-full sm:w-auto">
-                Estatísticas <BarChart2 className="w-4 h-4" />
-              </Button>
             </div>
 
             {/* Fila Acordeão List */}

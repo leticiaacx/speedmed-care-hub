@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Users, Calendar, Stethoscope, LogOut, Moon, Sun, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Settings, Users, Calendar, Stethoscope, LogOut, Moon, Sun, Menu, X, DollarSign } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUser } from '@/contexts/UserContext';
 import speedmedLogo from '@/assets/logo_reduzida.svg';
@@ -38,6 +38,7 @@ const AdminLayout = () => {
         { icon: Stethoscope, label: 'Médicos', path: '/admin/doctors' },
         { icon: Calendar, label: 'Agendamentos', path: '/admin/appointments' },
         { icon: Users, label: 'Pacientes', path: '/admin/patients' },
+        { icon: DollarSign, label: 'Financeiro', path: '/admin/financial' },
         { icon: Settings, label: 'Configurações', path: '/admin/settings' },
     ];
 

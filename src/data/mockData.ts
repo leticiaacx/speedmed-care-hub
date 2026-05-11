@@ -260,84 +260,42 @@ export const mockPatients: USUARIO[] = [
   },
 ];
 
+const today = new Date();
+const d = (offsetDays: number, time: string) => {
+  const dt = new Date(today);
+  dt.setDate(dt.getDate() + offsetDays);
+  return `${dt.toISOString().split('T')[0]}T${time}`;
+};
+
 export const mockAppointments: AGENDAMENTO[] = [
-  {
-    id: 1,
-    usuario_id: 1,
-    patientName: 'Maria Santos',
-    data_hora: '2026-03-10T09:00',
-    type: 'Retorno',
-    status: 'confirmado',
-    location: 'Clínica SpeedMed - Unidade Centro',
-    reason: 'Acompanhamento dores de cabeça',
-    clinica_id: 1,
-    medico_id: 1,
-  },
-  {
-    id: 2,
-    usuario_id: 2,
-    patientName: 'João Oliveira',
-    medico_id: 1,
-    doctorName: 'Dr. José da Silva Pereira',
-    data_hora: '2026-03-12T11:00',
-    type: 'Consulta',
-    status: 'pendente',
-    location: 'Clínica SpeedMed - Unidade Sul',
-    reason: 'Retorno dor abdominal',
-    clinica_id: 1,
-  },
-  {
-    id: 3,
-    usuario_id: 3,
-    patientName: 'Ana Costa',
-    medico_id: 2,
-    doctorName: 'Dra. Ana Costa Lima',
-    data_hora: '2026-03-15T15:00',
-    type: 'Retorno',
-    status: 'confirmado',
-    location: 'Clínica SpeedMed - Unidade Centro',
-    reason: 'Controle pressão arterial',
-    clinica_id: 1,
-  },
-  {
-    id: 4,
-    usuario_id: 5,
-    patientName: 'Fernanda Lima',
-    medico_id: 1,
-    doctorName: 'Dr. José da Silva Pereira',
-    data_hora: '2026-03-20T14:00',
-    type: 'Exame',
-    status: 'pendente',
-    location: 'Clínica SpeedMed - Unidade Centro',
-    reason: 'Exames de rotina',
-    clinica_id: 1,
-  },
-  {
-    id: 5,
-    usuario_id: 1,
-    patientName: 'Maria Santos',
-    data_hora: '2026-04-05T10:00',
-    type: 'Retorno',
-    status: 'pendente',
-    location: 'Clínica SpeedMed - Unidade Centro',
-    reason: 'Avaliação tratamento',
-    medico_id: 1,
-    clinica_id: 1,
-  },
-  {
-    id: 6,
-    usuario_id: 4,
-    patientName: 'Carlos Mendes',
-    medico_id: 2,
-    doctorName: 'Dra. Ana Costa Lima',
-    data_hora: '2026-03-05T08:30',
-    type: 'Consulta',
-    status: 'realizado',
-    location: 'Clínica SpeedMed - Unidade Norte',
-    reason: 'Acompanhamento diabetes',
-    clinica_id: 1,
-  },
+  // ── Hoje ────────────────────────────────────────────────────────────────────
+  { id: 1, usuario_id: 1, patientName: 'Maria Santos', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(0,'08:00'), type: 'Consulta', status: 'confirmado', location: 'SpeedMed - Centro', reason: 'Dores de cabeça frequentes', clinica_id: 1 },
+  { id: 2, usuario_id: 2, patientName: 'João Oliveira', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(0,'09:00'), type: 'Retorno', status: 'confirmado', location: 'SpeedMed - Centro', reason: 'Retorno dor abdominal', clinica_id: 1 },
+  { id: 3, usuario_id: 3, patientName: 'Ana Costa', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(0,'10:00'), type: 'Consulta', status: 'realizado', location: 'SpeedMed - Centro', reason: 'Controle pressão arterial', clinica_id: 1 },
+  { id: 4, usuario_id: 4, patientName: 'Carlos Mendes', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(0,'11:00'), type: 'Exame', status: 'realizado', location: 'SpeedMed - Centro', reason: 'Acompanhamento diabetes', clinica_id: 1 },
+  { id: 5, usuario_id: 5, patientName: 'Fernanda Lima', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(0,'14:00'), type: 'Consulta', status: 'pendente', location: 'SpeedMed - Centro', reason: 'Check-up anual', clinica_id: 1 },
+  { id: 6, usuario_id: 1, patientName: 'Maria Santos', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(0,'09:30'), type: 'Retorno', status: 'falta', location: 'SpeedMed - Sul', reason: 'Retorno cardiologia', clinica_id: 1 },
+  { id: 7, usuario_id: 3, patientName: 'Ana Costa', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(0,'11:30'), type: 'Consulta', status: 'cancelado', location: 'SpeedMed - Sul', reason: 'Acompanhamento hipertensão', clinica_id: 1 },
+  { id: 8, usuario_id: 2, patientName: 'João Oliveira', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(0,'15:00'), type: 'Consulta', status: 'confirmado', location: 'SpeedMed - Sul', reason: 'Dor no peito', clinica_id: 1 },
+  // ── Esta semana ──────────────────────────────────────────────────────────────
+  { id: 9,  usuario_id: 4, patientName: 'Carlos Mendes', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(1,'08:30'), type: 'Retorno', status: 'confirmado', location: 'SpeedMed - Norte', reason: 'Glicemia', clinica_id: 1 },
+  { id: 10, usuario_id: 5, patientName: 'Fernanda Lima', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(1,'10:00'), type: 'Consulta', status: 'pendente', location: 'SpeedMed - Sul', reason: 'Palpitações', clinica_id: 1 },
+  { id: 11, usuario_id: 1, patientName: 'Maria Santos', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(2,'09:00'), type: 'Consulta', status: 'confirmado', location: 'SpeedMed - Centro', reason: 'Enxaqueca', clinica_id: 1 },
+  { id: 12, usuario_id: 2, patientName: 'João Oliveira', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(2,'11:00'), type: 'Exame', status: 'pendente', location: 'SpeedMed - Centro', reason: 'Hemograma', clinica_id: 1 },
+  { id: 13, usuario_id: 3, patientName: 'Ana Costa', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(3,'14:00'), type: 'Retorno', status: 'confirmado', location: 'SpeedMed - Sul', reason: 'Pressão alta', clinica_id: 1 },
+  { id: 14, usuario_id: 4, patientName: 'Carlos Mendes', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(4,'09:00'), type: 'Consulta', status: 'pendente', location: 'SpeedMed - Norte', reason: 'Avaliação cardíaca', clinica_id: 1 },
+  { id: 15, usuario_id: 5, patientName: 'Fernanda Lima', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(4,'16:00'), type: 'Retorno', status: 'confirmado', location: 'SpeedMed - Centro', reason: 'Resultado exames', clinica_id: 1 },
+  // ── Este mês (passado) ───────────────────────────────────────────────────────
+  { id: 16, usuario_id: 1, patientName: 'Maria Santos', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(-3,'10:00'), type: 'Consulta', status: 'realizado', location: 'SpeedMed - Centro', reason: 'Rotina', clinica_id: 1 },
+  { id: 17, usuario_id: 2, patientName: 'João Oliveira', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(-4,'09:00'), type: 'Retorno', status: 'realizado', location: 'SpeedMed - Sul', reason: 'Gastrite', clinica_id: 1 },
+  { id: 18, usuario_id: 3, patientName: 'Ana Costa', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(-5,'08:00'), type: 'Exame', status: 'realizado', location: 'SpeedMed - Centro', reason: 'Ecocardiograma', clinica_id: 1 },
+  { id: 19, usuario_id: 4, patientName: 'Carlos Mendes', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(-6,'11:00'), type: 'Consulta', status: 'cancelado', location: 'SpeedMed - Norte', reason: 'Dor lombar', clinica_id: 1 },
+  { id: 20, usuario_id: 5, patientName: 'Fernanda Lima', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(-7,'15:00'), type: 'Consulta', status: 'falta', location: 'SpeedMed - Sul', reason: 'Check-up', clinica_id: 1 },
+  { id: 21, usuario_id: 1, patientName: 'Maria Santos', medico_id: 2, doctorName: 'Dra. Ana Costa Lima', data_hora: d(-10,'09:30'), type: 'Retorno', status: 'realizado', location: 'SpeedMed - Sul', reason: 'Pressão', clinica_id: 1 },
+  { id: 22, usuario_id: 2, patientName: 'João Oliveira', medico_id: 1, doctorName: 'Dr. José da Silva Pereira', data_hora: d(-12,'10:00'), type: 'Consulta', status: 'realizado', location: 'SpeedMed - Centro', reason: 'Colesterol', clinica_id: 1 },
 ];
+
+
 
 export const mockPatientUser = {
   id: 1,

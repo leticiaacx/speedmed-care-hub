@@ -1,10 +1,11 @@
 import { useUser } from '@/contexts/UserContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { Users, Stethoscope, Calendar, Clock, Activity, ChevronRight, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const AdminDashboard = () => {
     const { doctors, patients } = useUser();
-    const { appointments, pendingAppointmentsCount } = useAppointments();
+    const { appointments, pendingAppointmentsCount, updateAppointmentStatus } = useAppointments();
 
     const todayDate = new Date().toISOString().split('T')[0];
     const todaysAppointments = appointments
@@ -93,6 +94,12 @@ const AdminDashboard = () => {
                                 <div className="w-full mt-4 p-3 bg-secondary/50 rounded-lg border border-border">
                                     <p className="text-[10px] text-muted-foreground uppercase text-left mb-1">Motivo</p>
                                     <p className="text-xs font-light text-left text-foreground truncate">{nextAppointment?.reason || 'Consulta Geral'}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-4 w-full">
+                                    <Button size="sm" variant="outline" className="text-xs text-green-600 border-green-200 hover:bg-green-50 shadow-none" onClick={() => updateAppointmentStatus(nextAppointment.id, 'realizado')}>Realizada</Button>
+                                    <Button size="sm" variant="outline" className="text-xs text-sky-600 border-sky-200 hover:bg-sky-50 shadow-none" onClick={() => updateAppointmentStatus(nextAppointment.id, 'remarcado')}>Remarcar</Button>
+                                    <Button size="sm" variant="outline" className="text-xs text-yellow-600 border-yellow-200 hover:bg-yellow-50 shadow-none" onClick={() => updateAppointmentStatus(nextAppointment.id, 'falta')}>Faltou</Button>
+                                    <Button size="sm" variant="outline" className="text-xs text-red-600 border-red-200 hover:bg-red-50 shadow-none" onClick={() => updateAppointmentStatus(nextAppointment.id, 'cancelado')}>Cancelar</Button>
                                 </div>
                             </div>
                         ) : (

@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { useUser } from '@/contexts/UserContext';
-import { Users, Eye, Search, Plus } from 'lucide-react';
+import { Users, ChevronDown, ChevronUp, Search, Plus, Mail, Phone, MapPin, Stethoscope } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import PatientRecord from '@/components/PatientRecord';
 
 const AdminPatients = () => {
     const { patients, doctors, registerPatient } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
+    const [expandedId, setExpandedId] = useState<number | null>(null);
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [newName, setNewName] = useState('');
@@ -56,14 +55,12 @@ const AdminPatients = () => {
         p.cpf.includes(searchTerm)
     );
 
-    const selectedPatient = selectedPatientId ? patients.find(p => p.id === selectedPatientId) : null;
-
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Pacientes Gerais</h1>
-                    <p className="text-muted-foreground mt-1">Acesso de leitura a todos os prontuários da clínica</p>
+                    <p className="text-muted-foreground mt-1">Informações cadastrais dos pacientes da clínica</p>
                 </div>
 
                 <div className="flex gap-4 w-full sm:w-auto">
@@ -83,41 +80,76 @@ const AdminPatients = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPatients.map(patient => (
-                    <div key={patient.id} className="speedmed-card">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                                <Users className="w-6 h-6 text-muted-foreground" />
+                {filteredPatients.map(patient => {
+                    const isExpanded = expandedId === patient.id;
+                    const doctor = doctors.find(d => d.id === patient.medico_id);
+                    return (
+                        <div key={patient.id} className="speedmed-card transition-all duration-200">
+                            {/* Header sempre visível */}
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                                    <Users className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-bold text-foreground truncate">{patient.nome}</h3>
+                                    {patient.socialName && (
+                                        <p className="text-xs text-muted-foreground">Nome social: {patient.socialName}</p>
+                                    )}
+                                    <p className="text-sm text-muted-foreground">Idade: {patient.age} anos</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">CPF: {patient.cpf}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-foreground">{patient.nome}</h3>
-                                <p className="text-sm text-muted-foreground">Idade: {patient.age} anos</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">CPF: {patient.cpf}</p>
-                            </div>
-                        </div>
 
-                        <Button variant="outline" className="w-full gap-2 text-primary border-primary/20 hover:bg-primary/5" onClick={() => setSelectedPatientId(patient.id)}>
-                            <Eye className="w-4 h-4" /> Ver Prontuário Completo
-                        </Button>
-                    </div>
-                ))}
+                            {/* Detalhes expandíveis — apenas dados cadastrais */}
+                            {isExpanded && (
+                                <div className="border-t pt-4 mt-2 space-y-2 text-sm">
+                                    {patient.email && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <Mail className="w-4 h-4 shrink-0" />
+                                            <span className="truncate">{patient.email}</span>
+                                        </div>
+                                    )}
+                                    {patient.phone && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <Phone className="w-4 h-4 shrink-0" />
+                                            <span>{patient.phone}</span>
+                                        </div>
+                                    )}
+                                    {patient.address && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <MapPin className="w-4 h-4 shrink-0" />
+                                            <span className="truncate">{patient.address}</span>
+                                        </div>
+                                    )}
+                                    {doctor && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <Stethoscope className="w-4 h-4 shrink-0" />
+                                            <span>Responsável: {doctor.nome}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <Button
+                                variant="outline"
+                                className="w-full gap-2 mt-4 text-primary border-primary/20 hover:bg-primary/5"
+                                onClick={() => setExpandedId(isExpanded ? null : patient.id)}
+                            >
+                                {isExpanded ? (
+                                    <><ChevronUp className="w-4 h-4" /> Ocultar dados cadastrais</>
+                                ) : (
+                                    <><ChevronDown className="w-4 h-4" /> Ver dados cadastrais</>
+                                )}
+                            </Button>
+                        </div>
+                    );
+                })}
                 {filteredPatients.length === 0 && (
                     <div className="col-span-full py-12 text-center text-muted-foreground">
                         Nenhum paciente encontrado com essa busca.
                     </div>
                 )}
             </div>
-
-            <Dialog open={!!selectedPatientId} onOpenChange={(open) => !open && setSelectedPatientId(null)}>
-                <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] flex flex-col p-0 overflow-hidden">
-                    <DialogHeader className="p-0 m-0 hidden">
-                        <DialogTitle></DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto p-6 pt-2">
-                        {selectedPatient && <PatientRecord patient={selectedPatient} />}
-                    </div>
-                </DialogContent>
-            </Dialog>
 
             <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
                 <DialogContent>

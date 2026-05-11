@@ -40,6 +40,12 @@ const AdminAppointments = () => {
         pendente: 'bg-yellow-100 text-yellow-700',
         cancelado: 'bg-red-100 text-red-700',
         realizado: 'bg-blue-100 text-blue-700',
+        falta: 'bg-yellow-100 text-yellow-700',
+    };
+
+    const formatStatus = (status: string) => {
+        if (status === 'falta') return 'Faltou';
+        return status.charAt(0).toUpperCase() + status.slice(1);
     };
 
     const handleDenySubmit = () => {
@@ -129,8 +135,8 @@ const AdminAppointments = () => {
                                         <td className="px-6 py-4 font-medium text-foreground">{appt.patientName}</td>
                                         <td className="px-6 py-4 text-muted-foreground">{appt.doctorName || 'Não definido'}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusColors[appt.status]}`}>
-                                                {appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusColors[appt.status] || 'bg-slate-100 text-slate-700'}`}>
+                                                {formatStatus(appt.status)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
