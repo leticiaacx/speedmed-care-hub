@@ -4,6 +4,7 @@ import speedmedLogo from '@/assets/logo_reduzida.svg';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAppointments } from '@/contexts/AppointmentContext';
 import { useUser, MEDICO } from '@/contexts/UserContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 
 const menuItems = [
@@ -32,7 +33,8 @@ const DoctorSidebar = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { unreadCount, pendingAppointmentsCount } = useAppointments();
-  const { currentUser, logout } = useUser();
+  const { currentUser } = useUser();
+  const { logout } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const toggleSidebar = () => setIsExpanded(!isExpanded);
 
@@ -163,7 +165,7 @@ const DoctorSidebar = () => {
 
           {/* Botão Sair */}
           <button
-            onClick={() => { logout(); navigate('/'); }}
+            onClick={logout}
             className="flex items-center h-14 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300"
           >
             <div className="flex items-center justify-center w-20 shrink-0">
@@ -192,7 +194,7 @@ const DoctorSidebar = () => {
             </button>
           );
         })}
-        <button onClick={() => { logout(); navigate('/'); }} className="flex flex-col items-center gap-0.5 p-1">
+        <button onClick={logout} className="flex flex-col items-center gap-0.5 p-1">
           <LogOut className="w-5 h-5 text-red-500" />
           <span className="text-[10px] text-red-500 font-bold">Sair</span>
         </button>

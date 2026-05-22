@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { mockDoctors, mockPatients, mockAdmins, MEDICO, USUARIO, CLINICA } from '@/data/mockData';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type { MEDICO, USUARIO, CLINICA };
 export type UserRole = 'admin' | 'doctor' | 'patient';
@@ -11,7 +12,9 @@ interface UserContextType {
     doctors: MEDICO[];
     patients: USUARIO[];
     admins: CLINICA[];
+    /** @deprecated Use useAuth().logout() instead */
     login: (email: string, password?: string) => { success: boolean; role?: UserRole };
+    /** @deprecated Use useAuth().logout() instead */
     logout: () => void;
     registerDoctor: (doctor: Omit<MEDICO, 'id'>) => void;
     registerPatient: (patient: Omit<USUARIO, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'>) => void;
@@ -21,38 +24,32 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+    const { user: authUser, logout: authLogout } = useAuth();
+
     const [doctors, setDoctors] = useState<MEDICO[]>(mockDoctors);
     const [patients, setPatients] = useState<USUARIO[]>(mockPatients);
-    const [admins, setAdmins] = useState<CLINICA[]>(mockAdmins);
-    const [userRole, setUserRole] = useState<UserRole | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [admins] = useState<CLINICA[]>(mockAdmins);
+
+    // Derive role and currentUser from the real auth state
+    const userRole = (authUser?.role ?? null) as UserRole | null;
 
     const getCurrentUser = () => {
-        if (!userRole || !currentUserId) return null;
-        if (userRole === 'admin') return admins.find(a => a.id === currentUserId);
-        if (userRole === 'doctor') return doctors.find(d => d.id === currentUserId);
-        if (userRole === 'patient') return patients.find(p => p.id === currentUserId);
+        if (!authUser) return null;
+        if (authUser.role === 'admin') return admins.find(a => a.email === authUser.email) ?? null;
+        if (authUser.role === 'doctor') return doctors.find(d => d.email === authUser.email) ?? null;
+        if (authUser.role === 'patient') return patients.find(p => p.email === authUser.email) ?? null;
         return null;
     };
 
-    const login = useCallback((email: string, password?: string) => {
-        const admin = admins.find(a => a.email === email);
-        if (admin) { setUserRole('admin'); setCurrentUserId(admin.id); return { success: true, role: 'admin' as UserRole }; }
-
-        const doctor = doctors.find(d => d.email === email);
-        if (doctor) { setUserRole('doctor'); setCurrentUserId(doctor.id); return { success: true, role: 'doctor' as UserRole }; }
-
-        const patient = patients.find(p => p.email === email);
-        if (patient) { setUserRole('patient'); setCurrentUserId(patient.id); return { success: true, role: 'patient' as UserRole }; }
-
-        toast.error('Credenciais inválidas. Verifique seu e-mail e tente novamente.');
+    /** @deprecated — kept for backward compat. Use useAuth().login() instead. */
+    const login = useCallback((_email: string, _password?: string) => {
         return { success: false };
-    }, [admins, doctors, patients]);
-
-    const logout = useCallback(() => {
-        setUserRole(null);
-        setCurrentUserId(null);
     }, []);
+
+    /** @deprecated — kept for backward compat. Use useAuth().logout() instead. */
+    const logout = useCallback(() => {
+        authLogout();
+    }, [authLogout]);
 
     const registerDoctor = useCallback((doctorData: Omit<MEDICO, 'id'>) => {
         const newDoc: MEDICO = { ...doctorData, id: Date.now() };

@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Users, Calendar, Stethoscope, LogOut, Moon, Sun, Menu, X, DollarSign } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useUser } from '@/contexts/UserContext';
+import { LayoutDashboard, Settings, Users, Calendar, Stethoscope, LogOut, DollarSign } from 'lucide-react';
+
+import { useAuth } from '@/contexts/AuthContext';
 import speedmedLogo from '@/assets/logo_reduzida.svg';
 
 const AdminLayout = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-    const { theme, toggleTheme } = useTheme();
-    const { logout, currentUser, userRole } = useUser();
+
+    const { logout } = useAuth();
 
     const [adminName, setAdminName] = useState(() => {
     const stored = localStorage.getItem('admin_clinic_data');
@@ -27,11 +27,7 @@ const AdminLayout = () => {
         return () => window.removeEventListener('adminUpdated', handleUpdate);
     }, []);
 
-    useEffect(() => {
-        if (userRole !== 'admin') {
-            navigate('/');
-        }
-    }, [userRole, navigate]);
+
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Painel', path: '/admin' },
@@ -113,7 +109,7 @@ const AdminLayout = () => {
 
                     {/* Botão de Sair Individualizado */}
                     <button
-                        onClick={() => { logout(); navigate('/'); }}
+                        onClick={logout}
                         className="flex items-center h-14 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 border-t border-border/30"
                     >
                         <div className="flex items-center justify-center w-20 shrink-0">
