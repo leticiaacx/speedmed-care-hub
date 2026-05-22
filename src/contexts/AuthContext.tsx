@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = useCallback(
     async (email: string, password: string): Promise<boolean> => {
       try {
-        const { user: loggedUser } = await loginApi({ email, password });
+        const { user: loggedUser } = await loginApi({ email, senha: password });
         setUser(loggedUser);
         navigate(ROLE_ROUTES[loggedUser.role]);
         return true;

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Relative path so Vite dev proxy forwards to localhost:3000 automatically.
 // In production this should be the full API URL.
-const BASE_URL = '/api/v1';
+const BASE_URL = 'http://localhost:3000/api/v1';
 
 
 export const STORAGE_KEYS = {

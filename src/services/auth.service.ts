@@ -19,13 +19,13 @@ export interface AuthTokens {
 
 export interface LoginPayload {
   email: string;
-  password: string;
+  senha: string;
 }
 
 export interface RegisterPayload {
   name: string;
   email: string;
-  password: string;
+  senha: string;
   cpf: string;
   phone: string;
 }

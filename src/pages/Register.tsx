@@ -11,7 +11,7 @@ const Register = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: '',
+        senha: '',
         cpf: '',
         phone: '',
     });
@@ -25,7 +25,7 @@ const Register = () => {
         await register({
             name: formData.name,
             email: formData.email,
-            password: formData.password,
+            senha: formData.senha,
             cpf: formData.cpf,
             phone: formData.phone,
         });
@@ -120,10 +120,10 @@ const Register = () => {
                             <div className="relative">
                                 <Input
                                     id="register-password"
-                                    name="password"
+                                    name="senha"
                                     type={showPassword ? 'text' : 'password'}
                                     required
-                                    value={formData.password}
+                                    value={formData.senha}
                                     onChange={handleChange}
                                     placeholder="••••••••••••"
                                     className="rounded-xl border-primary/30 pr-12"
