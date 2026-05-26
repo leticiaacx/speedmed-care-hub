@@ -82,6 +82,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         toast.success('Paciente cadastrado com sucesso!');
     }, []);
 
+    const updateDoctor = useCallback((id: number, data: Partial<Omit<MEDICO, 'id'>>) => {
+        setDoctors(prev => prev.map(d => d.id === id ? { ...d, ...data } : d));
+        toast.success('Dados do médico atualizados com sucesso!');
+    }, []);
+
+    const removeDoctor = useCallback((id: number) => {
+        setDoctors(prev => prev.map(d => d.id === id ? { ...d, ativo: false } : d));
+        toast.success('Médico removido do sistema.');
+    }, []);
     const updatePatient = useCallback((id: number, data: Partial<Omit<USUARIO, 'id'>>) => {
         setPatients(prev => prev.map(p => p.id === id ? { ...p, ...data } : p));
         toast.success('Dados do paciente atualizados!');
@@ -99,16 +108,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         if (adminData.email) {
             toast.info(`Credenciais enviadas para ${adminData.email}. Senha configurada: ${adminData.senha || 'não informada'}`, { duration: 6000 });
         }
-    }, []);
-
-    const updateDoctor = useCallback((id: number, data: Partial<Omit<MEDICO, 'id'>>) => {
-        setDoctors(prev => prev.map(d => d.id === id ? { ...d, ...data } : d));
-        toast.success('Dados do médico atualizados com sucesso!');
-    }, []);
-
-    const removeDoctor = useCallback((id: number) => {
-        setDoctors(prev => prev.map(d => d.id === id ? { ...d, ativo: false } : d));
-        toast.success('Médico removido do sistema.');
     }, []);
 
     const updateDoctorSchedule = useCallback((doctorId: number, schedule: MEDICO['schedule']) => {

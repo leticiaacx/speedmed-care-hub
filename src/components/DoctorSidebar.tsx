@@ -47,7 +47,7 @@ const DoctorSidebar = () => {
 
   // SINCRONIZAR COM EVENTO CUSTOMIZADO QUANDO SETTINGS MUDAR
   useEffect(() => {
-    const handleDoctorUpdate = (event: any) => {
+    const handleDoctorUpdate = (event: CustomEvent<MEDICO>) => {
       console.log('✅ Evento doctorUpdated recebido:', event.detail);
       setDoctor(event.detail);
     };
