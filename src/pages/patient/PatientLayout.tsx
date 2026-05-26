@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Calendar, Stethoscope, FileText, Clock, CalendarDays, Settings, LogOut, User } from 'lucide-react';
-import speedmedLogo from '@/assets/logo_reduzida.svg'; // Use a logo reduzida para consistência no hover
-import { mockPatientUser } from '@/data/mockData';
-import { useTheme } from '@/contexts/ThemeContext';
+import speedmedLogo from '@/assets/logo_reduzida.svg';
 import { useAppointments } from '@/contexts/AppointmentContext';
-import { useUser } from '@/contexts/UserContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const menuItems = [
   { icon: Home, label: 'Início', path: '/patient' },
@@ -22,7 +20,8 @@ const PatientLayout = () => {
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
   const { patientUnreadCount, patientFilesUnreadCount } = useAppointments();
-  const { logout } = useUser();
+  const { logout, user } = useAuth();
+
 
   return (
     <div className="flex min-h-screen bg-background font-sans">
@@ -99,13 +98,13 @@ const PatientLayout = () => {
               </div>
             </div>
             <div className={`flex flex-col transition-all duration-300 overflow-hidden ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"}`}>
-              <p className="text-sm font-bold text-foreground truncate max-w-[150px]">{mockPatientUser.nome}</p>
+              <p className="text-sm font-bold text-foreground truncate max-w-[150px]">{user?.name ?? 'Paciente'}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Paciente</p>
             </div>
           </div>
 
           <button
-            onClick={() => { logout(); navigate('/'); }}
+            onClick={logout}
             className="flex items-center h-14 w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-300 border-t border-border/30"
           >
             <div className="flex items-center justify-center w-20 shrink-0">
@@ -138,7 +137,7 @@ const PatientLayout = () => {
             </button>
           );
         })}
-        <button onClick={() => { logout(); navigate('/'); }} className="flex flex-col items-center gap-0.5 p-1">
+        <button onClick={logout} className="flex flex-col items-center gap-0.5 p-1">
           <LogOut className="w-5 h-5 text-red-500" />
           <span className="text-[10px] text-red-500 font-bold">Sair</span>
         </button>
