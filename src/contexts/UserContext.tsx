@@ -14,7 +14,12 @@ interface UserContextType {
     login: (email: string, password?: string) => { success: boolean; role?: UserRole };
     logout: () => void;
     registerDoctor: (doctor: Omit<MEDICO, 'id'>) => void;
+    updateDoctor: (id: number, data: Partial<Omit<MEDICO, 'id'>>) => void;
+    removeDoctor: (id: number) => void;
     registerPatient: (patient: Omit<USUARIO, 'id' | 'consultationHistory' | 'allergies' | 'medications' | 'heredity' | 'lastConsultation'>) => void;
+    updatePatient: (id: number, data: Partial<Omit<USUARIO, 'id'>>) => void;
+    removePatient: (id: number) => void;
+    registerAdmin: (admin: Omit<CLINICA, 'id'>) => void;
     updateDoctorSchedule: (doctorId: number, schedule: MEDICO['schedule']) => void;
 }
 
@@ -77,6 +82,35 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         toast.success('Paciente cadastrado com sucesso!');
     }, []);
 
+    const updatePatient = useCallback((id: number, data: Partial<Omit<USUARIO, 'id'>>) => {
+        setPatients(prev => prev.map(p => p.id === id ? { ...p, ...data } : p));
+        toast.success('Dados do paciente atualizados!');
+    }, []);
+
+    const removePatient = useCallback((id: number) => {
+        setPatients(prev => prev.filter(p => p.id !== id));
+        toast.success('Paciente removido do sistema.');
+    }, []);
+
+    const registerAdmin = useCallback((adminData: Omit<CLINICA, 'id'>) => {
+        const newAdmin: CLINICA = { ...adminData, id: Date.now() };
+        setAdmins(prev => [...prev, newAdmin]);
+        toast.success('Administrador cadastrado com sucesso!');
+        if (adminData.email) {
+            toast.info(`Credenciais enviadas para ${adminData.email}. Senha configurada: ${adminData.senha || 'não informada'}`, { duration: 6000 });
+        }
+    }, []);
+
+    const updateDoctor = useCallback((id: number, data: Partial<Omit<MEDICO, 'id'>>) => {
+        setDoctors(prev => prev.map(d => d.id === id ? { ...d, ...data } : d));
+        toast.success('Dados do médico atualizados com sucesso!');
+    }, []);
+
+    const removeDoctor = useCallback((id: number) => {
+        setDoctors(prev => prev.map(d => d.id === id ? { ...d, ativo: false } : d));
+        toast.success('Médico removido do sistema.');
+    }, []);
+
     const updateDoctorSchedule = useCallback((doctorId: number, schedule: MEDICO['schedule']) => {
         setDoctors(prev => prev.map(d => d.id === doctorId ? { ...d, schedule } : d));
         toast.success('Agenda médica atualizada com sucesso!');
@@ -92,7 +126,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             login,
             logout,
             registerDoctor,
+            updateDoctor,
+            removeDoctor,
             registerPatient,
+            updatePatient,
+            removePatient,
+            registerAdmin,
             updateDoctorSchedule
         }}>
             {children}

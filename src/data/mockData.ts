@@ -75,6 +75,7 @@ export interface MEDICO {
   phone?: string;
   location?: string;
   onlineConsultation?: boolean;
+  ativo?: boolean; // soft-delete: undefined/true = ativo, false = inativo
 }
 
 export interface CLINICA {
@@ -82,9 +83,15 @@ export interface CLINICA {
   nome: string;
   endereco_id: number;
   horario_funcionamento: string;
-  
+
   // UI mapping
   email: string;
+
+  // Admin user fields (optional — used when CLINICA represents an individual admin)
+  senha?: string;
+  cpf?: string;
+  phone?: string;
+  cargo?: 'Administrador Geral' | 'Gerente de Unidade' | 'Recepcionista';
 }
 
 export interface ENDERECO {

@@ -17,6 +17,7 @@ import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminPatients from "./pages/admin/AdminPatients";
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminFinancial from './pages/admin/AdminFinancial';
+import AdminAdmins from './pages/admin/AdminAdmins';
 
 // Doctor
 import DoctorLayout from "./components/DoctorLayout";
@@ -50,15 +51,16 @@ const App = () => (
                 <Route path="/" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="doctors" element={<AdminDoctors />} />
-                  <Route path="appointments" element={<AdminAppointments />} />
-                  <Route path="patients" element={<AdminPatients />} />
-                  <Route path="settings" element={<AdminSettings />} />
-                  <Route path="financial" element={<AdminFinancial />} />
-                </Route>
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="doctors" element={<AdminDoctors />} />
+                    <Route path="appointments" element={<AdminAppointments />} />
+                    <Route path="patients" element={<AdminPatients />} />
+                    <Route path="admins" element={<AdminAdmins />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="financial" element={<AdminFinancial />} />
+                  </Route>
 
                 <Route path="/doctor" element={<DoctorLayout />}>
                   <Route index element={<DoctorHome />} />
