@@ -16,7 +16,7 @@ import {
     AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
     AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -511,17 +511,17 @@ const AdminDoctors = () => {
             {/* ═══════════════════════════════════════════════════════════════
                 SHEET: Detalhes do Médico
             ═══════════════════════════════════════════════════════════════ */}
-            <Sheet open={!!liveDetailDoc} onOpenChange={open => { if (!open) closeDetail(); }}>
-                <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+            <Dialog open={!!liveDetailDoc} onOpenChange={open => { if (!open) closeDetail(); }}>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                     {liveDetailDoc && (
                         <>
-                            <SheetHeader className="pb-6 border-b border-border">
+                            <DialogHeader className="pb-6 border-b border-border">
                                 <div className="flex items-center gap-4">
                                     <div className={`w-16 h-16 rounded-full ${getAvatarColor(liveDetailDoc.id)} flex items-center justify-center shadow-md shrink-0`}>
                                         <span className="text-xl font-bold text-white">{getInitials(liveDetailDoc.nome)}</span>
                                     </div>
                                     <div>
-                                        <SheetTitle className="text-xl font-semibold leading-tight">{liveDetailDoc.nome}</SheetTitle>
+                                        <DialogTitle className="text-xl font-semibold leading-tight">{liveDetailDoc.nome}</DialogTitle>
                                         <div className="flex flex-wrap gap-1.5 mt-2">
                                             <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium ${getSpecialtyColor(liveDetailDoc.especialidade)}`}>
                                                 {liveDetailDoc.especialidade}
@@ -538,7 +538,7 @@ const AdminDoctors = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </SheetHeader>
+                            </DialogHeader>
 
                             <div className="py-6 space-y-6">
                                 {/* Informações */}
@@ -641,8 +641,8 @@ const AdminDoctors = () => {
                             </div>
                         </>
                     )}
-                </SheetContent>
-            </Sheet>
+                </DialogContent>
+            </Dialog>
 
             {/* ═══════════════════════════════════════════════════════════════
                 DIALOG: Editar Agenda (a partir do Sheet de detalhes)

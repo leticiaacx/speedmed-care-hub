@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Users, Calendar, Stethoscope, LogOut, Moon, Sun, Menu, X, DollarSign, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Settings, Users, Calendar, Stethoscope, LogOut, DollarSign, ShieldCheck } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useUser } from '@/contexts/UserContext';
 import speedmedLogo from '@/assets/logo_reduzida.svg';
@@ -19,8 +19,9 @@ const AdminLayout = () => {
 });
 
     useEffect(() => {
-        const handleUpdate = (event: any) => {
-            setAdminName(event.detail.name);
+        const handleUpdate = (event: Event) => {
+            const customEvent = event as CustomEvent;
+            setAdminName(customEvent.detail.name);
         };
 
         window.addEventListener('adminUpdated', handleUpdate);

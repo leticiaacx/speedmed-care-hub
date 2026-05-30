@@ -12,8 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const AdminAppointments = () => {
     const { appointments, updateAppointmentStatus, addAppointment } = useAppointments();
     const { doctors, patients } = useUser();
+
+    // ── Filter state ──────────────────────────────────────────────────────────
     const [filterDoctor, setFilterDoctor] = useState<string>('all');
     const [filterStatus, setFilterStatus] = useState<string>('all');
+    const [filterDateFrom, setFilterDateFrom] = useState<string>('');
+    const [filterDateTo, setFilterDateTo] = useState<string>('');
+    const [filterPatientName, setFilterPatientName] = useState<string>('');
 
     const [selectedApptId, setSelectedApptId] = useState<number | null>(null);
     const [denyingApptId, setDenyingApptId] = useState<number | null>(null);
@@ -21,19 +26,48 @@ const AdminAppointments = () => {
     const [showNewAppt, setShowNewAppt] = useState(false);
     const [newAppt, setNewAppt] = useState({ usuario_id: '', medico_id: '', data_hora: '', reason: '', type: 'Consulta' });
 
+    // ── Active filters count ──────────────────────────────────────────────────
+    const activeFiltersCount = [
+        filterDoctor !== 'all',
+        filterStatus !== 'all',
+        filterDateFrom !== '',
+        filterDateTo !== '',
+        filterPatientName !== '',
+    ].filter(Boolean).length;
+
+    const clearFilters = () => {
+        setFilterDoctor('all');
+        setFilterStatus('all');
+        setFilterDateFrom('');
+        setFilterDateTo('');
+        setFilterPatientName('');
+    };
+
     const filteredAppointments = useMemo(() => {
         return appointments.filter(a => {
-            // We don't have doctorId explicitly on all old mock appointments, but let's assume filtering by doctor 
-            // in a real app would strictly use doctorId. For now we just return all if 'all'.
+            // Filter by doctor
             if (filterDoctor !== 'all') {
-                // Find doctor to match name, since our old mockData doesn't have doctorId on Appointment.
-                // Or we can just ignore strict doctor filtering for the old mocks and apply it to new ones.
-                // We'll skip strict doctor filtering for this demo if doctorId is missing on legacy data.
+                if (a.medico_id.toString() !== filterDoctor) return false;
             }
+            // Filter by status
             if (filterStatus !== 'all' && a.status !== filterStatus) return false;
+            // Filter by date range
+            if (filterDateFrom) {
+                const apptDate = a.data_hora.split('T')[0];
+                if (apptDate < filterDateFrom) return false;
+            }
+            if (filterDateTo) {
+                const apptDate = a.data_hora.split('T')[0];
+                if (apptDate > filterDateTo) return false;
+            }
+            // Filter by patient name
+            if (filterPatientName) {
+                const q = filterPatientName.toLowerCase().trim();
+                if (!a.patientName?.toLowerCase().includes(q)) return false;
+            }
             return true;
         }).sort((a, b) => new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime());
-    }, [appointments, filterDoctor, filterStatus]);
+    }, [appointments, filterDoctor, filterStatus, filterDateFrom, filterDateTo, filterPatientName]);
 
     const statusColors: Record<string, string> = {
         confirmado: 'bg-green-100 text-green-700',
@@ -80,6 +114,23 @@ const AdminAppointments = () => {
 
     const selectedAppt = selectedApptId ? appointments.find(a => a.id === selectedApptId) : null;
 
+    // ── Unique doctors from appointments (for filter dropdown) ─────────────────
+    const uniqueDoctors = useMemo(() => {
+        const doctorMap = new Map<number, string>();
+        appointments.forEach(a => {
+            if (a.medico_id && a.doctorName) {
+                doctorMap.set(a.medico_id, a.doctorName);
+            }
+        });
+        // Also include from doctors list
+        doctors.forEach(d => {
+            if (!doctorMap.has(d.id)) {
+                doctorMap.set(d.id, d.nome);
+            }
+        });
+        return Array.from(doctorMap.entries()).map(([id, name]) => ({ id, name }));
+    }, [appointments, doctors]);
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -91,17 +142,93 @@ const AdminAppointments = () => {
                     <Button onClick={() => setShowNewAppt(true)} className="gap-2">
                         <Plus className="w-4 h-4" /> Novo Agendamento
                     </Button>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                        <SelectTrigger className="w-[160px] bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Status</SelectItem>
-                            <SelectItem value="pendente">Pendentes</SelectItem>
-                            <SelectItem value="confirmado">Confirmados</SelectItem>
-                            <SelectItem value="realizado">Realizados</SelectItem>
-                            <SelectItem value="cancelado">Cancelados</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
+            </div>
+
+            {/* ── Filter Bar ──────────────────────────────────────────────────── */}
+            <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        <Filter className="w-4 h-4 text-primary" />
+                        Filtros
+                        {activeFiltersCount > 0 && (
+                            <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{activeFiltersCount}</span>
+                        )}
+                    </div>
+                    {activeFiltersCount > 0 && (
+                        <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground gap-1">
+                            <X className="w-3 h-3" /> Limpar filtros
+                        </Button>
+                    )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    {/* Date from */}
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Data início</label>
+                        <Input
+                            type="date"
+                            value={filterDateFrom}
+                            onChange={e => setFilterDateFrom(e.target.value)}
+                            className="h-9 text-sm"
+                        />
+                    </div>
+                    {/* Date to */}
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Data fim</label>
+                        <Input
+                            type="date"
+                            value={filterDateTo}
+                            onChange={e => setFilterDateTo(e.target.value)}
+                            className="h-9 text-sm"
+                        />
+                    </div>
+                    {/* Status */}
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Status</label>
+                        <Select value={filterStatus} onValueChange={setFilterStatus}>
+                            <SelectTrigger className="h-9 bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos os Status</SelectItem>
+                                <SelectItem value="pendente">Pendentes</SelectItem>
+                                <SelectItem value="confirmado">Confirmados</SelectItem>
+                                <SelectItem value="realizado">Realizados</SelectItem>
+                                <SelectItem value="cancelado">Cancelados</SelectItem>
+                                <SelectItem value="falta">Faltou</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    {/* Doctor */}
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Médico</label>
+                        <Select value={filterDoctor} onValueChange={setFilterDoctor}>
+                            <SelectTrigger className="h-9 bg-background"><SelectValue placeholder="Médico" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos os Médicos</SelectItem>
+                                {uniqueDoctors.map(d => (
+                                    <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    {/* Patient Name */}
+                    <div className="space-y-1">
+                        <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Paciente</label>
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                            <Input
+                                placeholder="Nome do paciente..."
+                                value={filterPatientName}
+                                onChange={e => setFilterPatientName(e.target.value)}
+                                className="h-9 pl-8 text-sm"
+                            />
+                        </div>
+                    </div>
+                </div>
+                {activeFiltersCount > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                        {filteredAppointments.length} agendamento{filteredAppointments.length !== 1 ? 's' : ''} encontrado{filteredAppointments.length !== 1 ? 's' : ''}
+                    </p>
+                )}
             </div>
 
             <div className="speedmed-card bg-card border border-border">
@@ -109,6 +236,9 @@ const AdminAppointments = () => {
                     <div className="text-center py-12">
                         <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
                         <p className="text-muted-foreground font-medium">Nenhum agendamento encontrado.</p>
+                        {activeFiltersCount > 0 && (
+                            <p className="text-sm text-muted-foreground/60 mt-1">Tente ajustar os filtros.</p>
+                        )}
                     </div>
                 ) : (
                     <div className="overflow-x-auto">

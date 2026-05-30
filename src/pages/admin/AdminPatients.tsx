@@ -15,7 +15,7 @@ import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
     AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -338,21 +338,21 @@ const AdminPatients = () => {
             {/* ═══════════════════════════════════════════════════════════════
                 SHEET: Ficha do Paciente
             ═══════════════════════════════════════════════════════════════ */}
-            <Sheet open={!!liveDetail} onOpenChange={open => { if (!open) setDetailPatient(null); }}>
-                <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-0">
+            <Dialog open={!!liveDetail} onOpenChange={open => { if (!open) setDetailPatient(null); }}>
+                <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto p-0">
                     {liveDetail && (() => {
                         const doctor = doctors.find(d => d.id === liveDetail.medico_id);
                         return (
                             <>
                                 {/* Header */}
                                 <div className={`${getAvatarColor(liveDetail.id)} px-6 pt-8 pb-6`}>
-                                    <SheetHeader>
+                                    <DialogHeader>
                                         <div className="flex items-end gap-4">
                                             <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/40 shadow-lg">
                                                 <span className="text-2xl font-bold text-white">{getInitials(liveDetail.nome)}</span>
                                             </div>
                                             <div className="pb-1">
-                                                <SheetTitle className="text-white text-xl font-semibold leading-tight">{liveDetail.nome}</SheetTitle>
+                                                <DialogTitle className="text-white text-xl font-semibold leading-tight">{liveDetail.nome}</DialogTitle>
                                                 {liveDetail.socialName && (
                                                     <p className="text-white/70 text-xs mt-0.5">Nome social: {liveDetail.socialName}</p>
                                                 )}
@@ -376,7 +376,7 @@ const AdminPatients = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    </SheetHeader>
+                                    </DialogHeader>
                                 </div>
 
                                 {/* Tabs */}
@@ -573,8 +573,8 @@ const AdminPatients = () => {
                             </>
                         );
                     })()}
-                </SheetContent>
-            </Sheet>
+                </DialogContent>
+            </Dialog>
 
             {/* ═══════════════════════════════════════════════════════════════
                 DIALOG: Cadastro / Edição
